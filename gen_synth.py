@@ -4,6 +4,7 @@ import wave
 import math
 import struct
 import numpy as np
+from noise import pnoise1
 from functools import reduce
 
 # Generate a mono WAV file, with fs (sample rate) 44100 Hz and 16 bps (bits per sample)
@@ -26,13 +27,13 @@ def gen_wav(
 
     for frame in range(total_frames):
         sample = generator(frame / fs)
-        output_file.writeframes(struct.pack('h', int(sample * 32767)))
+        output_file.writeframes(struct.pack('h', int(np.clip(sample, -1, 1) * 32767)))
 
 def add(generator_a, generator_b):
     return lambda t: generator_a(t) + generator_b(t)
 
 def sine(frequency, amplitude):
-    return lambda t: amplitude * math.sin(t * 2 * math.pi * frequency)
+    return lambda t: amplitude(t) * math.sin(t * 2 * math.pi * frequency)
 
 def hz_from_midi(m):
     return 440 * math.pow(2, (m - 69)/12)
@@ -53,21 +54,30 @@ def harmonics(fundamental, amplitudes):
 def noise(amplitude):
     return lambda _: np.random.normal(0, 1) / 3 * amplitude
 
+def random_wobble(scale=1, offset=0):
+    t_offset = np.random.normal() * 20
+    return lambda t: scale * pnoise1((t + t_offset)*10, 2) + offset
+
+def scale(factor, fn):
+    return lambda t: factor * fn(t)
+
 def flute(note):
     vol = amplitude(-10)
+    magnitude = 0.4
+    offset = 0.6
     return add(
         noise(amplitude(-35)),
         harmonics(note, {
-            1: vol,
-            1.5: 0.07 * vol,
-            2: 0.4 * vol,
-            2.5: 0.06 * vol,
-            3: 0.3 * vol,
-            4: 0.05 * vol,
-            5: 0.05 * vol,
-            6: 0.015 * vol,
-            7: 0.002 * vol,
-            8: 0.01 * vol,
+            1: scale(vol, random_wobble(magnitude, offset)),
+            1.5: scale(0.07 * vol, random_wobble(magnitude, offset)),
+            2: scale(0.4 * vol, random_wobble(magnitude, offset)),
+            2.5: scale(0.06 * vol, random_wobble(magnitude, offset)),
+            3: scale(0.3 * vol, random_wobble(magnitude, offset)),
+            4: scale(0.05 * vol, random_wobble(magnitude, offset)),
+            5: scale(0.05 * vol, random_wobble(magnitude, offset)),
+            6: scale(0.015 * vol, random_wobble(magnitude, offset)),
+            7: scale(0.002 * vol, random_wobble(magnitude, offset)),
+            8: scale(0.01 * vol, random_wobble(magnitude, offset)),
         })
     )
 
