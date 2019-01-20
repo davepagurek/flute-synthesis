@@ -59,11 +59,11 @@ def flute(note):
         noise(amplitude(-35)),
         harmonics(note, {
             1: vol,
-            1.5: 0.1 * vol,
+            1.5: 0.07 * vol,
             2: 0.4 * vol,
-            2.5: 0.08 * vol,
+            2.5: 0.06 * vol,
             3: 0.3 * vol,
-            4: 0.065 * vol,
+            4: 0.05 * vol,
             5: 0.05 * vol,
             6: 0.015 * vol,
             7: 0.002 * vol,
@@ -71,4 +71,5 @@ def flute(note):
         })
     )
 
-gen_wav("output.wav", flute(note("G4")), 1)
+if __name__ == "__main__":
+    gen_wav("output.wav", flute(note("G4")), 1)

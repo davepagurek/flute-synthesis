@@ -34,7 +34,7 @@ for note, filename in notes:
 
     # FFT is symmetrical, take the first half
     fft = np.fft.fft(amplitudes)[0:len(amplitudes)//2]
-    band_amplitudes = np.abs(fft)
+    band_amplitudes = np.absolute(fft)
     frequencies = [y * file.getframerate() / len(amplitudes) for y in range(len(amplitudes) // 2)]
 
     peaks, _ = signal.find_peaks(band_amplitudes, height=50, threshold=20, distance=50)
@@ -47,13 +47,13 @@ for note, filename in notes:
 
     ax[0].plot(times, amplitudes)
     ax[0].set_xlabel("Time (s)")
-    ax[0].set_ylabel("Amplitude")
+    ax[0].set_ylabel("Amplitude (dB)")
 
     ax[1].plot(frequencies, band_amplitudes)
     ax[1].plot([frequencies[i] for i in peaks], [band_amplitudes[i] for i in peaks], "x")
     ax[1].set_xscale("log", basex=2)
     ax[1].set_xlabel("Frequency (Hz)")
-    ax[1].set_ylabel("Amplitude")
+    ax[1].set_ylabel("Frequency Domain Amplitude")
 
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
