@@ -67,13 +67,25 @@ def scale(factor, fn):
 def const(n):
     return lambda _: n
 
+def lowpass(alpha, fn):
+    last = 0
+    
+    def lowpass_impl(t):
+        nonlocal alpha
+        nonlocal last
+        last += alpha * (fn(t) - last)
+        return last
+
+    return lowpass_impl
+
 def flute(note):
     vol = amplitude(-10)
     magnitude = 0.4
     offset = 0.6
     vibrato = add(const(0.7), sine(5, const(0.3)))
     return add(
-        noise(amplitude(-35)),
+        lowpass(20000/44100, noise(amplitude(-35))),
+        # noise(amplitude(-35)),
         harmonics(note, {
             1: scale(vol, random_wobble(magnitude, offset)),
             1.5: scale(0.07 * vol, random_wobble(magnitude, offset)),
