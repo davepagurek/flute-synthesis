@@ -32,6 +32,9 @@ def gen_wav(
 def add(generator_a, generator_b):
     return lambda t: generator_a(t) + generator_b(t)
 
+def mult(generator_a, generator_b):
+    return lambda t: generator_a(t) * generator_b(t)
+
 def sine(frequency, amplitude):
     return lambda t: amplitude(t) * math.sin(t * 2 * math.pi * frequency)
 
@@ -61,10 +64,14 @@ def random_wobble(scale=1, offset=0):
 def scale(factor, fn):
     return lambda t: factor * fn(t)
 
+def const(n):
+    return lambda _: n
+
 def flute(note):
     vol = amplitude(-10)
     magnitude = 0.4
     offset = 0.6
+    vibrato = add(const(0.7), sine(5, const(0.3)))
     return add(
         noise(amplitude(-35)),
         harmonics(note, {
@@ -72,12 +79,12 @@ def flute(note):
             1.5: scale(0.07 * vol, random_wobble(magnitude, offset)),
             2: scale(0.4 * vol, random_wobble(magnitude, offset)),
             2.5: scale(0.06 * vol, random_wobble(magnitude, offset)),
-            3: scale(0.3 * vol, random_wobble(magnitude, offset)),
-            4: scale(0.05 * vol, random_wobble(magnitude, offset)),
-            5: scale(0.05 * vol, random_wobble(magnitude, offset)),
-            6: scale(0.015 * vol, random_wobble(magnitude, offset)),
-            7: scale(0.002 * vol, random_wobble(magnitude, offset)),
-            8: scale(0.01 * vol, random_wobble(magnitude, offset)),
+            3: mult(scale(0.3 * vol, random_wobble(magnitude, offset)), vibrato),
+            4: mult(scale(0.05 * vol, random_wobble(magnitude, offset)), vibrato),
+            5: mult(scale(0.05 * vol, random_wobble(magnitude, offset)), vibrato),
+            6: mult(scale(0.015 * vol, random_wobble(magnitude, offset)), vibrato),
+            7: mult(scale(0.002 * vol, random_wobble(magnitude, offset)), vibrato),
+            8: mult(scale(0.01 * vol, random_wobble(magnitude, offset)), vibrato),
         })
     )
 
