@@ -41,8 +41,24 @@ def sine(frequency, amplitude):
 def hz_from_midi(m):
     return 440 * math.pow(2, (m - 69)/12)
 
+def midi_from_hz(hz):
+    return math.log2(hz / 440) * 12 + 69
+
 def amplitude(db):
     return math.pow(10, db/20)
+
+def note_name(midi):
+    offsets = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]
+    whole_midi = int(midi)
+    cents = round((midi - whole_midi) * 100)
+    octave = 4 + math.floor((whole_midi - 69)/12)
+    offset = (whole_midi - 69) % 12
+
+    note_str = f"{offsets[offset]}{octave}"
+    if cents != 0:
+        note_str += f" and {cents} cents"
+
+    return note_str
 
 def note(note_str):
     octave = int(note_str[-1])
