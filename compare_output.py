@@ -39,6 +39,24 @@ def compare_lowpass():
             ax[i].set_ylabel('Frequency (kHz)')
         ax[i].set_xlabel('Time (s)')
         ax[i].set_title(title)
+    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+def compare_bode():
+    alpha = 1/1000
+
+    single = signal.lti([1], [alpha, 1])
+    double = signal.lti([1], [alpha*alpha, 2*alpha, 1])
+
+    fig, ax = plt.subplots(2, 1, sharex=True, sharey=True)
+    for i, (title, system) in enumerate([('First Order', single), ('Second Order', double)]):
+        w, mag, _ = signal.bode(system)
+        ax[i].set_title(title)
+        ax[i].set_xlabel('Frequency (Hz)')
+        ax[i].set_ylabel('Gain (dB)')
+        ax[i].semilogx(w, mag)
+        ax[i].grid()
+        ax[i].margins(x=0, y=0)
+    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
 def read_wav(filename):
     file = wave.open(filename)
@@ -95,8 +113,11 @@ def compare_note():
 # compare_envelope()
 # plt.show()
 
-compare_lowpass()
+compare_bode()
 plt.show()
 
-compare_note()
-plt.show()
+# compare_lowpass()
+# plt.show()
+
+# compare_note()
+# plt.show()

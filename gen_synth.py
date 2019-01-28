@@ -71,7 +71,7 @@ def harmonics(fundamental, amplitudes):
     return reduce(lambda a, b: add(a, b), oscillators)
 
 def noise(amplitude):
-    return lambda _: np.random.normal(0, 1) / 3 * amplitude
+    return lambda _: np.random.uniform(-1, 1) * amplitude
 
 def random_wobble(scale=1, offset=0):
     t_offset = np.random.normal() * 20
