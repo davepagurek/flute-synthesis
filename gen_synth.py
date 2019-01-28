@@ -83,38 +83,89 @@ def scale(factor, fn):
 def const(n):
     return lambda _: n
 
-def lowpass(alpha, fn):
+def lowpass(a, fn):
     last = 0
     
     def lowpass_impl(t):
-        nonlocal alpha
+        nonlocal a
         nonlocal last
-        last += alpha * (fn(t) - last)
+        last += a * (fn(t) - last)
         return last
 
     return lowpass_impl
 
-def flute(note):
+def lowpass2(a, fn):
+    last = [0, 0]
+    
+    def lowpass_impl(t):
+        nonlocal a
+        nonlocal last
+
+        next_val = (a**2) * fn(t)
+        next_val -= 2*(a - 1)*last[-1]
+        next_val -= ((1-a)**2) * last[-2]
+
+        last.append(next_val)
+        last.pop(0)
+
+        return next_val
+
+    return lowpass_impl
+
+def scoped(t1, t2, fn):
+    return lambda t: fn(t - t1) if t1 <= t and t < t2 else 0
+
+def piecewise(fns):
+    pieces = [ scoped(t1, t2, fn) for (t1, t2), fn in fns ]
+    return reduce(lambda a, b: add(a, b), pieces)
+
+def decay(A, tau):
+    return lambda t: A * math.exp(-t / tau)
+
+def attack(A, tau):
+    return lambda t: A * (1 - math.exp(-t / tau))
+
+def line(x1, y1, x2, y2):
+    return lambda t: (y2 - y1)/(x2 - x1) * (t - x1) + y1
+
+def envelope(a, d, s, r, s_time):
+    return piecewise([
+        ((0, a), line(0, 0, a, 1)),
+        ((a, a+d), line(0, 1, d, s)),
+        ((a+d, a+d+s_time), const(s)),
+        ((a+d+s_time, a+d+s_time+r), line(0, s, r, 0))
+    ])
+
+def note_envelope(length, velocity, adsr):
+    a, d, s, r = adsr
+    return mult(const(velocity), envelope(a, d, s, r, max(0, length - a - d - r)))
+
+def flute(note, length):
     vol = amplitude(-10)
     magnitude = 0.4
     offset = 0.6
     vibrato = add(const(0.7), sine(5, const(0.3)))
     return add(
-        lowpass(20000/44100, noise(amplitude(-35))),
-        # noise(amplitude(-35)),
-        harmonics(note, {
-            1: scale(vol, random_wobble(magnitude, offset)),
-            1.5: scale(0.07 * vol, random_wobble(magnitude, offset)),
-            2: scale(0.4 * vol, random_wobble(magnitude, offset)),
-            2.5: scale(0.06 * vol, random_wobble(magnitude, offset)),
-            3: mult(scale(0.3 * vol, random_wobble(magnitude, offset)), vibrato),
-            4: mult(scale(0.05 * vol, random_wobble(magnitude, offset)), vibrato),
-            5: mult(scale(0.05 * vol, random_wobble(magnitude, offset)), vibrato),
-            6: mult(scale(0.015 * vol, random_wobble(magnitude, offset)), vibrato),
-            7: mult(scale(0.002 * vol, random_wobble(magnitude, offset)), vibrato),
-            8: mult(scale(0.01 * vol, random_wobble(magnitude, offset)), vibrato),
-        })
+        mult(
+            lowpass2((1/44100)/((1/44100) + (1/15000)), noise(amplitude(-15))),
+            note_envelope(length, 1, (0.01, 0.1, 0.3, 0.07))
+        ),
+        mult(
+            harmonics(note, {
+                1: scale(vol, random_wobble(magnitude, offset)),
+                1.5: scale(0.07 * vol, random_wobble(magnitude, offset)),
+                2: scale(0.4 * vol, random_wobble(magnitude, offset)),
+                2.5: scale(0.06 * vol, random_wobble(magnitude, offset)),
+                3: mult(scale(0.3 * vol, random_wobble(magnitude, offset)), vibrato),
+                4: mult(scale(0.05 * vol, random_wobble(magnitude, offset)), vibrato),
+                5: mult(scale(0.05 * vol, random_wobble(magnitude, offset)), vibrato),
+                6: mult(scale(0.015 * vol, random_wobble(magnitude, offset)), vibrato),
+                7: mult(scale(0.002 * vol, random_wobble(magnitude, offset)), vibrato),
+                8: mult(scale(0.01 * vol, random_wobble(magnitude, offset)), vibrato),
+            }),
+            note_envelope(length, 1, (0.06, 0.1, 0.65, 0.07))
+        )
     )
 
 if __name__ == "__main__":
-    gen_wav("output.wav", flute(note("G4")), 1)
+    gen_wav("output.wav", flute(note("G4"), 1), 1)
