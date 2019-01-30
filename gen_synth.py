@@ -22,7 +22,7 @@ def gen_wav(
     output_file.setframerate(fs)
     output_file.setcomptype("NONE", "not compressed")
 
-    total_frames = time * fs
+    total_frames = int(time * fs)
     output_file.setnframes(total_frames)
 
     for frame in range(total_frames):
@@ -32,11 +32,14 @@ def gen_wav(
 def add(generator_a, generator_b):
     return lambda t: generator_a(t) + generator_b(t)
 
+def sub(generator_a, generator_b):
+    return lambda t: generator_a(t) - generator_b(t)
+
 def mult(generator_a, generator_b):
     return lambda t: generator_a(t) * generator_b(t)
 
-def sine(frequency, amplitude):
-    return lambda t: amplitude(t) * math.sin(t * 2 * math.pi * frequency)
+def sine(frequency, amplitude, phase=0):
+    return lambda t: amplitude(t) * math.sin(phase + t * 2 * math.pi * frequency)
 
 def hz_from_midi(m):
     return 440 * math.pow(2, (m - 69)/12)
@@ -82,6 +85,9 @@ def scale(factor, fn):
 
 def const(n):
     return lambda _: n
+
+def sigmoid(offset, scale=1):
+    return lambda t: 1/(math.exp(-scale * (t + offset)) + 1)
 
 def lowpass(a, fn):
     last = 0
@@ -142,19 +148,19 @@ def note_envelope(length, velocity, adsr):
 
 def flute(note, length):
     vol = amplitude(-10)
-    magnitude = 0.4
-    offset = 0.6
-    vibrato = add(const(0.7), sine(5, const(0.3)))
+    magnitude = 0.2
+    offset = 0.8
+    vibrato = add(const(0.7), mult(sigmoid(-0.4, scale=30),  sine(5, const(0.6))))
     return add(
         mult(
             lowpass2((1/44100)/((1/44100) + (1/15000)), noise(amplitude(-15))),
             note_envelope(length, 1, (0.01, 0.1, 0.3, 0.07))
         ),
         add(
-            harmonics(note, {
+            mult(const(vol), harmonics(note, {
                 1: mult(note_envelope(length, 1, (0.04, 0.1, 0.5, 0.07)), random_wobble(magnitude, offset)),
                 1.5: mult(note_envelope(length, 0.5, (0.04, 0.08, 0.14, 0.07)), random_wobble(magnitude, offset))
-            }),
+            })),
             mult(
                 harmonics(note, {
                     2: scale(0.4 * vol, random_wobble(magnitude, offset)),
@@ -172,4 +178,4 @@ def flute(note, length):
     )
 
 if __name__ == "__main__":
-    gen_wav("output.wav", flute(note("G4"), 1), 1)
+    gen_wav("output.wav", flute(note("G4"), 1.2), 1.2)
