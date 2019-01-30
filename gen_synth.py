@@ -150,20 +150,24 @@ def flute(note, length):
             lowpass2((1/44100)/((1/44100) + (1/15000)), noise(amplitude(-15))),
             note_envelope(length, 1, (0.01, 0.1, 0.3, 0.07))
         ),
-        mult(
+        add(
             harmonics(note, {
-                1: scale(vol, random_wobble(magnitude, offset)),
-                1.5: scale(0.07 * vol, random_wobble(magnitude, offset)),
-                2: scale(0.4 * vol, random_wobble(magnitude, offset)),
-                2.5: scale(0.06 * vol, random_wobble(magnitude, offset)),
-                3: mult(scale(0.3 * vol, random_wobble(magnitude, offset)), vibrato),
-                4: mult(scale(0.05 * vol, random_wobble(magnitude, offset)), vibrato),
-                5: mult(scale(0.05 * vol, random_wobble(magnitude, offset)), vibrato),
-                6: mult(scale(0.015 * vol, random_wobble(magnitude, offset)), vibrato),
-                7: mult(scale(0.002 * vol, random_wobble(magnitude, offset)), vibrato),
-                8: mult(scale(0.01 * vol, random_wobble(magnitude, offset)), vibrato),
+                1: mult(note_envelope(length, 1, (0.04, 0.1, 0.5, 0.07)), random_wobble(magnitude, offset)),
+                1.5: mult(note_envelope(length, 0.5, (0.04, 0.08, 0.14, 0.07)), random_wobble(magnitude, offset))
             }),
-            note_envelope(length, 1, (0.06, 0.1, 0.65, 0.07))
+            mult(
+                harmonics(note, {
+                    2: scale(0.4 * vol, random_wobble(magnitude, offset)),
+                    2.5: scale(0.06 * vol, random_wobble(magnitude, offset)),
+                    3: mult(scale(0.3 * vol, random_wobble(magnitude, offset)), vibrato),
+                    4: mult(scale(0.05 * vol, random_wobble(magnitude, offset)), vibrato),
+                    5: mult(scale(0.05 * vol, random_wobble(magnitude, offset)), vibrato),
+                    6: mult(scale(0.015 * vol, random_wobble(magnitude, offset)), vibrato),
+                    7: mult(scale(0.002 * vol, random_wobble(magnitude, offset)), vibrato),
+                    8: mult(scale(0.01 * vol, random_wobble(magnitude, offset)), vibrato),
+                }),
+                note_envelope(length, 1, (0.1, 0.1, 0.65, 0.07))
+            )
         )
     )
 

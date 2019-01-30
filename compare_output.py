@@ -113,11 +113,11 @@ def compare_note():
 # compare_envelope()
 # plt.show()
 
-compare_bode()
-plt.show()
+# compare_bode()
+# plt.show()
 
 # compare_lowpass()
 # plt.show()
 
-# compare_note()
-# plt.show()
+compare_note()
+plt.show()
