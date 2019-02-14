@@ -29,6 +29,9 @@ for note, filename in notes:
         data = struct.unpack("<1h", file.readframes(1))
         amplitudes.extend(data)
 
+    # Take the middle two quarters of data, approximately steady state
+    amplitudes = amplitudes[len(amplitudes)//4:-len(amplitudes)//4]
+
     # Normalize to -1, 1
     amplitudes = np.multiply(amplitudes, 1/32768)
     times = np.multiply(range(len(amplitudes)), file.getframerate())
@@ -67,8 +70,8 @@ ax[0].set_ylabel("Amplitude")
 ax[0].scatter(peak_ratios, peak_amplitudes)
 
 ax[1].set_ylabel("Phase (Degrees)")
-ax[1].scatter(peak_ratios, peak_phases, s=np.add(np.multiply(peak_amplitudes, 5), 3))
+ax[1].scatter(peak_ratios, peak_phases, s=np.add(np.multiply(peak_amplitudes, 20), 3))
 
-ax[1].set_xlabel("Ratio to Fundamental Frequency")
+ax[1].set_xlabel("Harmonic Ratio to Fundamental Frequency")
 
 plt.show()
