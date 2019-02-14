@@ -11,7 +11,7 @@ csl: ieee-with-url.csl # From https://github.com/citation-style-language/styles
 
 # Background
 
-# Methodology
+# Method
 
 ## Picking oscillators
 
@@ -31,30 +31,42 @@ For each peak found, I graphed its amplitude and phase relative to its distance 
 
 ![](img/harmonics.png)
 
-Here we can see that the peaks come in multiples of 0.5. Why does this occur? The flute is an open air column. Resonant frequencies arise in open air columns due to the standing pressure wave patterns that are able to form. The geometry of the column allows standing waves with integer number of nodes:
+Here we can see that the peaks come in multiples of 0.5. Why does this occur?
+
+The flute is an open air column. Resonant frequencies arise in open air columns due to the standing pressure wave patterns that are able to form. The geometry of the column allows standing waves with integer number of nodes:
 
 TODO insert node diagram
 
-Each standing wave has a wavelength relative to the length of the instrument. The frequency of the note produced by each wave is found by the equation $f = \frac{v}{\lambda}$, where $v$ is the speed of sound, and $\lambda$ is the wavelength. This tells us that the lowest resonant frequency is proportional to twice the length of the instrument. Each successively higher frequency increases by a factor of half the length of the instrument.
+Each standing wave has a wavelength relative to the length of the instrument. The frequency of the note produced by each wave is found by the equation $f = \frac{v}{\lambda}$, where $v$ is the speed of sound, and $\lambda$ is the wavelength. This tells us that the lowest resonant frequency is proportional to twice the length of the instrument. Each successively higher frequency increases by a factor of half the length of the instrument. Given that the length of a flute is around 66 cm, we can estimate the lowest note, corresponding to one node:
 
-We define the harmonics of a frequency to be integer multiples of that frequency. Since every frequency resonated by the flute appears to come in intervals of 0.5 instead of 1, this tells us that the true fundamental is actually half of the large initial peak we see in the graphs, and then every successive harmonic frequency is an integer multiple of it.
+$$\begin{aligned}
+f &= \frac{v}{\lambda}\\
+&= \frac{340.27 \text{ m/s}}{2 \cdot 66\text{ cm}}
+&= 257.78\text{ Hz}\\
+\end{aligned}$$
 
-TODO test if we see integer multiples for e.g. low G
-
-It is interesting to note here that the harmonic frequencies are not in tune. Integer multiples of an in-tune base frequency do not always end up in tune. We perceive two frequencies where one is twice the other to be an octave apart, so octaves are found to be proportional to $2^n$ for increasing $n$. Equal-tempered tuning divides the space between octaves into 12 equally spaced semitones, so semitones are proportional to $2^\frac{n}{12}$. Integer multiples of a base note do not always align with these twelfths. Here is a table of the notes corresponding to the harmonics for an A4 (440 Hz) and the note it sounds:
+This frequency corresponds to the note B3 and 74 cents. This agrees with the experience of playing the flute, where the lowest note that can be fingered is C3 by covering every hole. If we continue adding harmonics by doubling the frequency, corresponding to the addition of another node, we should see the following notes[^tuning]:
 
 Harmonic | Frequency | Note
 ---------|-----------|-----
-1 | 440 | A4
-2 | 880 | A5
-3 | 1320 | E5 and 2 cents
-4 | 1760 | A6
-5 | 2200 | C6 and 86 cents
-6 | 2640 | E6 and 2 cents
-7 | 3080 | F#6 and 69 cents
-8 | 3520 | A7
-9 | 3960 | B7 and 4 cents
-10 | 4400 | C7 and 86 cents
+1 | 261.6256 | C3
+2 | 523.2511 | C4
+3 | 784.8767 | G4 and 2 cents
+4 | 1046.5023 | C5
+5 | 1308.1278 | D#5 and 86 cents
+6 | 1569.7534 | G5 and 2 cents
+7 | 1831.3790 | A6 and 69 cents
+8 | 2093.0045 | C6
+9 | 2354.6301 | D6 and 4 cents
+10 | 2616.2557 | D#6 and 86 cents
+
+[^tuning]: It is interesting to note here that the harmonic frequencies are not in tune. We perceive a doubling of a frequency to be a jump up an octave, so octaves are found to be proportional to $2^n$ for increasing $n$. Equal-tempered tuning divides the space between octaves into 12 equally spaced semitones, so semitones are proportional to $2^\frac{n}{12}$. Integer multiples of a base note do not always align with these twelfths. Some instruments purposefully detune notes that are intended to be played in a chord with other notes so that the harmonics do not interfere dissonantly with the rest of the chord. (TODO find citation for this)
+
+All of these frequencies are integer multiples of the fundamental. Since the second harmonic is double the frequency of the first, if we were to look at the higher harmonics relative to the second one, it would look like they are all multiples of 0.5, like what we saw in the harmonics from the recordings. This implies that the first peak frequency found in the recordings is actually the second harmonic of the flute for that fingering. Notes like this are played by overblowing to change the air pressure in the instrument, preventing the first harmonic from sounding.
+
+TODO figure out which notes this happens for
+
+TODO describe the oscillator setup
 
 ## Noise component
 
