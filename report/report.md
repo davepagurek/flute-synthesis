@@ -60,11 +60,13 @@ Harmonic | Frequency | Note
 9 | 2354.6301 | D6 and 4 cents
 10 | 2616.2557 | D#6 and 86 cents
 
-[^tuning]: It is interesting to note here that the harmonic frequencies are not in tune. We perceive a doubling of a frequency to be a jump up an octave, so octaves are found to be proportional to $2^n$ for increasing $n$. Equal-tempered tuning divides the space between octaves into 12 equally spaced semitones, so semitones are proportional to $2^\frac{n}{12}$. Integer multiples of a base note do not always align with these twelfths. Some instruments purposefully detune notes that are intended to be played in a chord with other notes so that the harmonics do not interfere dissonantly with the rest of the chord. (TODO find citation for this)
+[^tuning]: It is interesting to note here that the harmonic frequencies are not in tune. We perceive a doubling of a frequency to be a jump up an octave, so octaves are found to be proportional to $2^n$ for increasing $n$. Equal-tempered tuning divides the space between octaves into 12 equally spaced semitones, so semitones are proportional to $2^\frac{n}{12}$. Integer multiples of a base note do not always align with these twelfths. Some instruments purposefully detune notes that are intended to be played in a chord with other notes so that the harmonics do not interfere dissonantly with the rest of the chord [@Edouard].)
 
 All of these frequencies are integer multiples of the fundamental. Since the second harmonic is double the frequency of the first, if we were to look at the higher harmonics relative to the second one, it would look like they are all multiples of 0.5, like what we saw in the harmonics from the recordings. This implies that the first peak frequency found in the recordings is actually the second harmonic of the flute for that fingering. Notes like this are played by overblowing to change the air pressure in the instrument, preventing the first harmonic from sounding.
 
-TODO figure out which notes this happens for
+To figure out which notes this applies to, I played an ascending scale and measured the ratios of the harmonics that sounded to the highest amplitude frequency. Notes for which harmonics come in multiples of 0.5 instead of 1 indicate overblown notes. The chart below shows a dot for each harmonic picked up by the peak finder on the FFT output, with dot size corresponding to relative amplitude. The overblown notes have been highlighted orange.
+
+![](img/overblown.png)
 
 TODO describe the oscillator setup
 

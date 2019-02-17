@@ -42,11 +42,13 @@ for note, filename in notes:
     phases = np.angle(fft, deg=True)
     frequencies = [y * file.getframerate() / len(amplitudes) for y in range(len(amplitudes) // 2)]
 
-    peaks, _ = signal.find_peaks(band_amplitudes, height=50, threshold=20, distance=20)
+    peaks, _ = signal.find_peaks(band_amplitudes, height=5, threshold=10, distance=30)
+    max_idx = max(peaks, key=lambda i: band_amplitudes[i])
+    peaks = [ i for i in peaks if frequencies[i] / frequencies[max_idx] > 0.2 ]
 
-    peak_ratios.extend([frequencies[i] / frequencies[peaks[0]] for i in peaks])
-    peak_amplitudes.extend([band_amplitudes[i] / band_amplitudes[peaks[0]] for i in peaks])
-    peak_phases.extend([phases[i] - phases[peaks[0]] for i in peaks])
+    peak_ratios.extend([frequencies[i] / frequencies[max_idx] for i in peaks])
+    peak_amplitudes.extend([band_amplitudes[i] / band_amplitudes[max_idx] for i in peaks])
+    peak_phases.extend([phases[i] - phases[max_idx] for i in peaks])
 
     fig, ax = plt.subplots(2, 1)
     fig.suptitle(note)
@@ -63,15 +65,16 @@ for note, filename in notes:
 
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
-fig, ax = plt.subplots(2, 1, sharex=True)
+fig, ax = plt.subplots(1, 1, sharex=True)
 fig.suptitle("Harmonics")
 
-ax[0].set_ylabel("Amplitude")
-ax[0].scatter(peak_ratios, peak_amplitudes)
+ax.set_ylabel("Amplitude")
+ax.scatter(peak_ratios, peak_amplitudes)
 
-ax[1].set_ylabel("Phase (Degrees)")
-ax[1].scatter(peak_ratios, peak_phases, s=np.add(np.multiply(peak_amplitudes, 20), 3))
+# ax[1].set_ylabel("Phase (Degrees)")
+# ax[1].scatter(peak_ratios, peak_phases, s=np.add(np.multiply(peak_amplitudes, 20), 3))
 
-ax[1].set_xlabel("Harmonic Ratio to Fundamental Frequency")
+ax.set_xlabel("Harmonic Ratio to Fundamental Frequency")
+fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
 plt.show()
