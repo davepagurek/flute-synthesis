@@ -7,37 +7,23 @@ bibliography: bibliography.bibtex
 csl: ieee-with-url.csl # From https://github.com/citation-style-language/styles
 ---
 
-# Introduction
+# Motivation
 
-# Background
+I record music as a hobby, and the music I produce occasionally includes recordings of my own flute playing. I do this because I can get a level of expressivity on the flute that I can't achieve as easily with the synthesizers I work with. I set out to construct a synthesizer that lets me imitate that sound, including the ability to control the intensity, vibrato, breathiness, and other parameters that I make use of when playing a real instrument. I hoped to create a tool that would give me more flexibility when prototyping new pieces, both in terms of the ease with which I can tweak and experiment and also the freedom of not having to disturb roommates should I decide to work at inconvenient times of the day.
 
-# Method
+My goal was both to produce a flute synthesizer, but also to gain a better understanding of the underlying processes making the flute sound like a flute. So, to begin with, I turned to theory and data to model the harmonics present in the sound of the flute.
 
-## Picking oscillators
+# Flute harmonics
 
-In 2018, I recorded a song [@Pagurek] that featured recordings of myself playing the flute. I extracted four samples from one flute track in the song where a single note is held for around a second. There are samples for the notes G, F, E$\flat$, and D. I processed each sample to get a sense of the harmonics present in the sound of the flute.
+## The theory
 
-To do this, I ran each sample through a Fast Fourier Transform (FFT). (TODO describe input format.) This converts each sample into the frequency domain, showing, for each frequency contributing to the overall sound, the amplitude of its contribution. The frequency domain is slightly noisy due to the background noise in the recording and the shaky tuning of my own playing, so a peak at a given frequency typically also shows some contribution to the surrounding frequencies. I ran the FFT results through a peak finding algorithm to come up with the frequency and amplitude of each peak, each marked with an X in the figures below.
+The flute can be modelled as an open air column [@HyperPhysicsFlute] for the purposes of examining its resonance. Resonant frequencies arise in open air columns due to the standing pressure wave patterns that are able to form. The geometry of the column allows standing waves with integer number of nodes, shown in Figure 1.
 
-![](img/g.png)
+![The frequency of a harmonic relative to the number of nodes. Each successive harmonic has a frequency which is an integer multiple of the lowest note that can be sounded.](img/openair.png){width=60%}
 
-![](img/f.png)
+Each standing wave has a wavelength relative to half the length of the instrument [@HyperPhysicsColumn]. The frequency of the note produced by each wave is found by the equation $f = \frac{v}{\lambda}$, where $v$ is the speed of sound, and $\lambda$ is the wavelength. This tells us that the lowest resonant frequency is proportional to twice the length of the instrument. Each successively higher frequency increases by a factor of half the length of the instrument, and every harmonic above that is an integer multiple of this lowest frequency.
 
-![](img/e flat.png)
-
-![](img/d.png)
-
-For each peak found, I graphed its amplitude and phase relative to its distance from the largest peak, which I consider to be the fundamental frequency.
-
-![](img/harmonics.png)
-
-Here we can see that the peaks come in multiples of 0.5. Why does this occur?
-
-The flute is an open air column. Resonant frequencies arise in open air columns due to the standing pressure wave patterns that are able to form. The geometry of the column allows standing waves with integer number of nodes:
-
-TODO insert node diagram
-
-Each standing wave has a wavelength relative to the length of the instrument. The frequency of the note produced by each wave is found by the equation $f = \frac{v}{\lambda}$, where $v$ is the speed of sound, and $\lambda$ is the wavelength. This tells us that the lowest resonant frequency is proportional to twice the length of the instrument. Each successively higher frequency increases by a factor of half the length of the instrument. Given that the length of a flute is around 66 cm, we can estimate the lowest note, corresponding to one node:
+Given that the length of a flute is around 66 cm, we can estimate the lowest note, corresponding to one node:
 
 $$\begin{aligned}
 f &= \frac{v}{\lambda}\\
@@ -45,7 +31,9 @@ f &= \frac{v}{\lambda}\\
 &= 257.78\text{ Hz}\\
 \end{aligned}$$
 
-This frequency corresponds to the note B3 and 74 cents. This agrees with the experience of playing the flute, where the lowest note that can be fingered is C3 by covering every hole. If we continue adding harmonics by doubling the frequency, corresponding to the addition of another node, we should see the following notes[^tuning]:
+This frequency corresponds to the note B3 and 74 cents. This agrees with the experience of playing the flute, where the lowest note that can be fingered is C3 by covering every hole. If we continue adding doubling the frequency, we start filling in all the possible harmonics. Table 1 shows what notes these correspond to. [^tuning]
+
+Table: Harmonics of $C_3$
 
 Harmonic | Frequency | Note
 ---------|-----------|-----
@@ -62,13 +50,56 @@ Harmonic | Frequency | Note
 
 [^tuning]: It is interesting to note here that the harmonic frequencies are not in tune. We perceive a doubling of a frequency to be a jump up an octave, so octaves are found to be proportional to $2^n$ for increasing $n$. Equal-tempered tuning divides the space between octaves into 12 equally spaced semitones, so semitones are proportional to $2^\frac{n}{12}$. Integer multiples of a base note do not always align with these twelfths. Some instruments purposefully detune notes that are intended to be played in a chord with other notes so that the harmonics do not interfere dissonantly with the rest of the chord [@Edouard].)
 
-All of these frequencies are integer multiples of the fundamental. Since the second harmonic is double the frequency of the first, if we were to look at the higher harmonics relative to the second one, it would look like they are all multiples of 0.5, like what we saw in the harmonics from the recordings. This implies that the first peak frequency found in the recordings is actually the second harmonic of the flute for that fingering. Notes like this are played by overblowing to change the air pressure in the instrument, preventing the first harmonic from sounding.
+These are the frequency ratios that will have to be simulated in order to create a convincing flute synthesizer. Higher notes are made by uncovering holes on the flute to effectively shorten its length and increase the frequency of the lowest note that can be sounded.
+
+The next piece of information required is the amplitude of each harmonic. This is what will make a flute sound like a flute. For that, I turn to data from actual recordings.
+
+## Harmonics in the wild
+
+In 2018, I recorded a song [@Pagurek] that featured recordings of myself playing the flute. As a starting point, I extracted four samples from one flute track in the song where a single note is held for around a second. There are samples for the notes G, F, E$\flat$, and D. Each file is a mono wav file at a 44100 Hz, cut down to just be the steady-state portion of the held note. I processed each sample to get a sense of the harmonics present in the sound of the flute.I processed each sample to get a sense of the harmonics present in the sound of the flute.
+
+To do this, I ran each sample through a Fast Fourier Transform (FFT). This converts each sample into the frequency domain, showing, for each frequency contributing to the overall sound, the amplitude of its contribution. The frequency domain is slightly noisy due in part to the background noise in the recording and the imperfections in my own playing, so frequency peaks tend to be spread out over a few frequency bands. I ran the FFT results through a peak finding algorithm to automatically identify, approximately, the peaks in the spectrum. Each is marked with an X in the figures below.
+
+![](img/g.png)
+
+![](img/f.png)
+
+![](img/e flat.png)
+
+![](img/d.png)
+
+For each peak found, I graphed its amplitude relative to the ratio of its frequency to the frequency of the note I was playing:
+
+![](img/harmonics.png)
+
+Here we can see that the peaks come in multiples of 0.5. Why does this occur?
+
+All of these frequencies are integer multiples of the fundamental. If the harmonics look like they are all multiples of 0.5, like what we saw in the harmonics from the recordings, the actual fundamental frequency is half of the frequency of the note I was playing. Notes like this are played by overblowing to change the air pressure in the instrument, preventing the first harmonic from sounding.
 
 To figure out which notes this applies to, I played an ascending scale and measured the ratios of the harmonics that sounded to the highest amplitude frequency. Notes for which harmonics come in multiples of 0.5 instead of 1 indicate overblown notes. The chart below shows a dot for each harmonic picked up by the peak finder on the FFT output, with dot size corresponding to relative amplitude. The overblown notes have been highlighted orange.
 
 ![](img/overblown.png)
 
-TODO describe the oscillator setup
+Here is another plot of the relative amplitude of harmonics, segmented into the overblown and normal samples:
+
+![](img/overblown-segmented.png)
+
+The large spread of low amplitude values is largely due to noise surrounding the real peak that got picked up by the peak detector. Even in the clear peak regions, there is large variance. I'm choosing to average the values into a plausible common amplitude that will sound close enough. The amplitudes I picked for each harmonic in additive synthesis are shown in Table 2.
+
+Table: Harmonic amplitudes
+
+Harmonic | Normal amplitude | Overblown amplitude
+---------|------------------|--------------------
+1 | 1 | 1
+1.5 | 0 | 0.05
+2 | 0.6 | 0.3
+2.5 | 0 | 0.03
+3 | 0.2 | 0.15
+4 | 0.15 | 0.1
+5 | 0.05 | 0.05
+6 | 0.05 | 0.02
+7 | 0.03 | 0.02
+
 
 ## Noise component
 

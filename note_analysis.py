@@ -29,8 +29,8 @@ for note, filename in notes:
         data = struct.unpack("<1h", file.readframes(1))
         amplitudes.extend(data)
 
-    # Take the middle two quarters of data, approximately steady state
-    amplitudes = amplitudes[len(amplitudes)//4:-len(amplitudes)//4]
+    # Take the middle four sixths of data, approximately steady state
+    amplitudes = amplitudes[len(amplitudes)//6:-len(amplitudes)//6]
 
     # Normalize to -1, 1
     amplitudes = np.multiply(amplitudes, 1/32768)
@@ -43,29 +43,30 @@ for note, filename in notes:
     frequencies = [y * file.getframerate() / len(amplitudes) for y in range(len(amplitudes) // 2)]
 
     peaks, _ = signal.find_peaks(band_amplitudes, height=5, threshold=10, distance=30)
-    max_idx = max(peaks, key=lambda i: band_amplitudes[i])
-    peaks = [ i for i in peaks if frequencies[i] / frequencies[max_idx] > 0.2 ]
+    max_idx = next(i for i in peaks if band_amplitudes[i] > 1000)
+    # max_idx = max(peaks, key=lambda i: band_amplitudes[i])
+    peaks = [ i for i in peaks if frequencies[i] / frequencies[max_idx] > 0.3 ]
 
     peak_ratios.extend([frequencies[i] / frequencies[max_idx] for i in peaks])
     peak_amplitudes.extend([band_amplitudes[i] / band_amplitudes[max_idx] for i in peaks])
     peak_phases.extend([phases[i] - phases[max_idx] for i in peaks])
 
-    fig, ax = plt.subplots(2, 1)
+    fig, ax = plt.subplots(1, 1, figsize=(7, 3))
     fig.suptitle(note)
 
-    ax[0].plot(times, amplitudes)
-    ax[0].set_xlabel("Time (s)")
-    ax[0].set_ylabel("Amplitude (dB)")
+    # ax[0].plot(times, amplitudes)
+    # ax[0].set_xlabel("Time (s)")
+    # ax[0].set_ylabel("Amplitude (dB)")
 
-    ax[1].plot(frequencies, band_amplitudes)
-    ax[1].plot([frequencies[i] for i in peaks], [band_amplitudes[i] for i in peaks], "x")
-    ax[1].set_xscale("log", basex=2)
-    ax[1].set_xlabel("Frequency (Hz)")
-    ax[1].set_ylabel("Frequency Domain Amplitude")
+    ax.plot(frequencies, band_amplitudes)
+    ax.plot([frequencies[i] for i in peaks], [band_amplitudes[i] for i in peaks], "x")
+    ax.set_xscale("log", basex=2)
+    ax.set_xlabel("Frequency (Hz)")
+    ax.set_ylabel("Frequency Domain Amplitude")
 
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
-fig, ax = plt.subplots(1, 1, sharex=True)
+fig, ax = plt.subplots(1, 1, sharex=True, figsize=(7, 3))
 fig.suptitle("Harmonics")
 
 ax.set_ylabel("Amplitude")

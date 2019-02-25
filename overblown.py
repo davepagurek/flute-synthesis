@@ -18,6 +18,12 @@ notes = []
 names = []
 amps = []
 colors = []
+
+overblown_x = []
+overblown_y = []
+normal_x = []
+normal_y = []
+
 for note, start_time in enumerate(range(4, 74, 2)):
     name = note_name(60 + note)
     name = name.replace("#", "^\sharp")
@@ -49,17 +55,35 @@ for note, start_time in enumerate(range(4, 74, 2)):
     # Round to nearest 0.5
     peak_ratios = [ (2*ratio(i))/2 for i in peaks ]
 
-    color = "#FAA81B" if any(round(ratio * 6) % 6 == 3 for ratio in peak_ratios) else "#1932BF"
+    overblown = any(round(ratio * 6) % 6 == 3 for ratio in peak_ratios)
+    color = "#FAA81B" if overblown else "#1932BF"
+
+    if overblown:
+        overblown_x.extend(peak_ratios)
+        overblown_y.extend(peak_amplitudes)
+    else:
+        normal_x.extend(peak_ratios)
+        normal_y.extend(peak_amplitudes)
 
     ratios.extend(peak_ratios)
     amps.extend([ 1 - (x - 1)**4 for x in peak_amplitudes])
     notes.extend([ note for _ in peak_ratios ])
     colors.extend([ color for _ in peak_ratios ])
 
-fig = plt.scatter(notes, ratios, s=np.add(np.multiply(amps, 60), 5), color=colors)
+plt.scatter(notes, ratios, s=np.add(np.multiply(amps, 60), 5), color=colors)
 plt.xticks(range(len(names)), names)
 plt.title("Flute Note Harmonics")
 plt.ylabel("Ratio to Highest Peak")
 plt.xlabel("Note")
+
+fig, ax = plt.subplots(1, 2, sharex=True, sharey=True)
+ax[0].set_title("Normal")
+ax[0].scatter(normal_x, normal_y)
+ax[0].set_ylabel("Relative amplitude")
+ax[0].set_xlabel("Harmonic")
+
+ax[1].set_title("Overblown")
+ax[1].scatter(overblown_x, overblown_y)
+ax[1].set_xlabel("Harmonic")
 
 plt.show()

@@ -118,6 +118,9 @@ def lowpass2(a, fn):
 
     return lowpass_impl
 
+def time_offset(fn, delay):
+    return lambda t: fn(t - delay)
+
 def scoped(t1, t2, fn):
     return lambda t: fn(t - t1) if t1 <= t and t < t2 else 0
 
@@ -151,6 +154,8 @@ def flute(note, length):
     magnitude = 0.2
     offset = 0.8
     vibrato = add(const(0.7), mult(sigmoid(-0.4, scale=30),  sine(5, const(0.6))))
+    delay = 0.02
+
     return add(
         mult(
             lowpass2((1/44100)/((1/44100) + (1/15000)), noise(amplitude(-15))),
@@ -161,9 +166,9 @@ def flute(note, length):
                 1: mult(note_envelope(length, 1, (0.04, 0.1, 0.5, 0.07)), random_wobble(magnitude, offset)),
                 1.5: mult(note_envelope(length, 0.5, (0.04, 0.08, 0.14, 0.07)), random_wobble(magnitude, offset))
             })),
-            mult(
+            time_offset(mult(
                 harmonics(note, {
-                    2: scale(0.4 * vol, random_wobble(magnitude, offset)),
+                    2: scale(0.6 * vol, random_wobble(magnitude, offset)),
                     2.5: scale(0.06 * vol, random_wobble(magnitude, offset)),
                     3: mult(scale(0.3 * vol, random_wobble(magnitude, offset)), vibrato),
                     4: mult(scale(0.05 * vol, random_wobble(magnitude, offset)), vibrato),
@@ -172,8 +177,8 @@ def flute(note, length):
                     7: mult(scale(0.002 * vol, random_wobble(magnitude, offset)), vibrato),
                     8: mult(scale(0.01 * vol, random_wobble(magnitude, offset)), vibrato),
                 }),
-                note_envelope(length, 1, (0.1, 0.1, 0.65, 0.07))
-            )
+                note_envelope(length - delay, 1, (0.1, 0.1, 0.65, 0.07))
+            ), delay)
         )
     )
 
