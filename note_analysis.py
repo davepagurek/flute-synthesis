@@ -22,7 +22,10 @@ notes = [
 peak_ratios = []
 peak_amplitudes = []
 peak_phases = []
-for note, filename in notes:
+
+
+fig, ax = plt.subplots(2, 2, figsize=(12, 6), sharex=True, sharey=True)
+for i, (note, filename) in enumerate(notes):
     file = wave.open(f"notes/{filename}.wav")
     amplitudes = []
     for _ in range(file.getnframes()):
@@ -51,20 +54,24 @@ for note, filename in notes:
     peak_amplitudes.extend([band_amplitudes[i] / band_amplitudes[max_idx] for i in peaks])
     peak_phases.extend([phases[i] - phases[max_idx] for i in peaks])
 
-    fig, ax = plt.subplots(1, 1, figsize=(7, 3))
-    fig.suptitle(note)
+    a = ax.item(i)
+
+    a.set_title(note)
 
     # ax[0].plot(times, amplitudes)
     # ax[0].set_xlabel("Time (s)")
     # ax[0].set_ylabel("Amplitude (dB)")
 
-    ax.plot(frequencies, band_amplitudes)
-    ax.plot([frequencies[i] for i in peaks], [band_amplitudes[i] for i in peaks], "x")
-    ax.set_xscale("log", basex=2)
-    ax.set_xlabel("Frequency (Hz)")
-    ax.set_ylabel("Frequency Domain Amplitude")
+    a.plot(frequencies, band_amplitudes)
+    a.plot([frequencies[i] for i in peaks], [band_amplitudes[i] for i in peaks], "x")
+    a.set_xscale("log", basex=2)
 
-    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+    if i % 2 == 0:
+        a.set_ylabel("Amplitude")
+    if i > 1:
+        a.set_xlabel("Frequency (Hz)")
+
+fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
 fig, ax = plt.subplots(1, 1, sharex=True, figsize=(7, 3))
 fig.suptitle("Harmonics")

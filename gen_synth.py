@@ -158,24 +158,23 @@ def flute(note, length):
 
     return add(
         mult(
-            lowpass2((1/44100)/((1/44100) + (1/15000)), noise(amplitude(-15))),
+            lowpass2((1/44100)/((1/44100) + (1/15000)), noise(amplitude(-18))),
             note_envelope(length, 1, (0.01, 0.1, 0.3, 0.07))
         ),
         add(
             mult(const(vol), harmonics(note, {
                 1: mult(note_envelope(length, 1, (0.04, 0.1, 0.5, 0.07)), random_wobble(magnitude, offset)),
-                1.5: mult(note_envelope(length, 0.5, (0.04, 0.08, 0.14, 0.07)), random_wobble(magnitude, offset))
+                1.5: mult(note_envelope(length, 0.05, (0.04, 0.08, 0.14, 0.07)), random_wobble(magnitude, offset)),
+                2.5: mult(note_envelope(length, 0.03, (0.04, 0.08, 0.14, 0.07)), random_wobble(magnitude, offset))
             })),
             time_offset(mult(
                 harmonics(note, {
-                    2: scale(0.6 * vol, random_wobble(magnitude, offset)),
-                    2.5: scale(0.06 * vol, random_wobble(magnitude, offset)),
-                    3: mult(scale(0.3 * vol, random_wobble(magnitude, offset)), vibrato),
-                    4: mult(scale(0.05 * vol, random_wobble(magnitude, offset)), vibrato),
-                    5: mult(scale(0.05 * vol, random_wobble(magnitude, offset)), vibrato),
-                    6: mult(scale(0.015 * vol, random_wobble(magnitude, offset)), vibrato),
-                    7: mult(scale(0.002 * vol, random_wobble(magnitude, offset)), vibrato),
-                    8: mult(scale(0.01 * vol, random_wobble(magnitude, offset)), vibrato),
+                    2: scale(0.15 * vol, random_wobble(magnitude, offset)),
+                    3: mult(scale(0.1 * vol, random_wobble(magnitude, offset)), vibrato),
+                    4: mult(scale(0.06 * vol, random_wobble(magnitude, offset)), vibrato),
+                    5: mult(scale(0.03 * vol, random_wobble(magnitude, offset)), vibrato),
+                    6: mult(scale(0.01 * vol, random_wobble(magnitude, offset)), vibrato),
+                    7: mult(scale(0.01 * vol, random_wobble(magnitude, offset)), vibrato),
                 }),
                 note_envelope(length - delay, 1, (0.1, 0.1, 0.65, 0.07))
             ), delay)
@@ -183,4 +182,4 @@ def flute(note, length):
     )
 
 if __name__ == "__main__":
-    gen_wav("output.wav", flute(note("G4"), 1.2), 1.2)
+    gen_wav("output.wav", flute(note("Bb5"), 2.5), 2.5)

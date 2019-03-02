@@ -7,7 +7,7 @@ import math
 import struct
 import matplotlib.pyplot as plt
 
-from gen_synth import flute, note, noise, lowpass, lowpass2, amplitude, note_envelope
+from gen_synth import flute, note, noise, lowpass, lowpass2, amplitude, note_envelope, add, mult, random_wobble, sine, sigmoid, const
 
 comptype="NONE"
 compname="not compressed"
@@ -15,7 +15,8 @@ nchannels=1
 sampwidth=2
 
 notes = [
-    ("G4", "notes/g.wav"),
+    # ("G4", "notes/g.wav"),
+    ("B5", "notes/vibrato.wav"),
 ]
 
 def compare_lowpass():
@@ -71,7 +72,7 @@ def read_wav(filename):
 def compare_envelope():
     real = np.abs(read_wav("notes/g.wav"))
     real = np.multiply(real, 1/max(real))
-        
+
     generator = note_envelope(len(real)/44100, 1, (0.06, 0.1, 0.65, 0.07))
     synth = np.array([ generator(t / 44100) for t in range(len(real)) ])
 
@@ -83,6 +84,26 @@ def compare_envelope():
     ax.set_ylabel("Amplitude")
     ax.set_xlabel("Time (s)")
     ax.set_title("ADSR Envelope")
+
+    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+def compare_modulation():
+    vibrato = add(const(0.7), mult(sigmoid(-0.4, scale=30),  sine(5, const(0.6))))
+    fluctuation = random_wobble(0.2, 0.8)
+
+    vibrato_synth = np.array([ vibrato(t / 44100) for t in range(44100 * 4) ])
+    fluctuation_synth = np.array([ fluctuation(t / 44100) for t in range(44100 * 4) ])
+
+    times = [ t / 44100 for t in range(44100 * 4) ]
+
+    fig, ax = plt.subplots(2, 1, sharex=True, sharey=True)
+    ax[0].plot(times, fluctuation_synth)
+    ax[1].plot(times, vibrato_synth)
+    ax[0].set_ylabel("Amplitude")
+    ax[1].set_ylabel("Amplitude")
+    ax[1].set_xlabel("Time (s)")
+    ax[0].set_title("Fluctuation")
+    ax[1].set_title("Brightness Modulation")
 
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
@@ -111,6 +132,9 @@ def compare_note():
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
 # compare_envelope()
+# plt.show()
+
+# compare_modulation()
 # plt.show()
 
 # compare_bode()
