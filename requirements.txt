@@ -3,3 +3,4 @@ wave
 scipy
 matplotlib
 noise
+mido

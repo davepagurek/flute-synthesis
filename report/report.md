@@ -31,25 +31,25 @@ f &= \frac{v}{\lambda}\\
 &= 257.78\text{ Hz}\\
 \end{aligned}$$
 
-This frequency corresponds to the note $B_3$ and 74 cents. This agrees with the experience of playing the flute, where the lowest note that can be fingered is $C_3$ by covering every hole. If we continue adding doubling the frequency, we start filling in all the possible harmonics. Table 1 shows what notes these correspond to. [^tuning]
+This frequency corresponds to the note $B_3$ and 74 cents. This agrees with the experience of playing the flute, where the lowest note that can be fingered is $C_4$ by covering every hole. If we continue adding doubling the frequency, we start filling in all the possible harmonics. Table 1 shows what notes these correspond to. [^tuning]
 
 \begin{table}[h]
   \centering
   \begin{tabular}{lll}
     {\bf Harmonic} & {\bf Frequency} & {\bf Note} \\
     \hline
-    1 & 261.6256 & $C_3$ \\
-    2 & 523.2511 & $C_4$ \\
-    3 & 784.8767 & $G_4$ and 2 cents \\
-    4 & 1046.5023 & $C_5$ \\
-    5 & 1308.1278 & $D^\sharp_5$ and 86 cents \\
-    6 & 1569.7534 & $G_5$ and 2 cents \\
+    1 & 261.6256 & $C_4$ \\
+    2 & 523.2511 & $C_5$ \\
+    3 & 784.8767 & $G_5$ and 2 cents \\
+    4 & 1046.5023 & $C_6$ \\
+    5 & 1308.1278 & $D^\sharp_6$ and 86 cents \\
+    6 & 1569.7534 & $G_6$ and 2 cents \\
     7 & 1831.3790 & $A_6$ and 69 cents \\
-    8 & 2093.0045 & $C_6$ \\
-    9 & 2354.6301 & $D_6$ and 4 cents \\
-    10 & 2616.2557 & $D^\sharp_6$ and 86 cents \\
+    8 & 2093.0045 & $C_7$ \\
+    9 & 2354.6301 & $D_7$ and 4 cents \\
+    10 & 2616.2557 & $D^\sharp_7$ and 86 cents \\
   \end{tabular}
-  \caption{Harmonics of $C_3$}
+  \caption{Harmonics of $C_4$}
 \end{table}
 
 [^tuning]: It is interesting to note here that the harmonic frequencies are not in tune. We perceive a doubling of a frequency to be a jump up an octave, so octaves are found to be proportional to $2^n$ for increasing $n$. Equal-tempered tuning divides the space between octaves into 12 equally spaced semitones, so semitones are proportional to $2^\frac{n}{12}$. Integer multiples of a base note do not always align with these twelfths. Some instruments purposefully detune notes that are intended to be played in a chord with other notes so that the harmonics do not interfere dissonantly with the rest of the chord [@Edouard].)
@@ -87,15 +87,15 @@ The large spread of low amplitude values is largely due to noise surrounding the
   \begin{tabular}{lll}
     {\bf Harmonic} & {\bf Normal amplitude} & {\bf Overblown amplitude} \\
     \hline
-    1 & 1 & 1 \\
-    1.5 & 0 & 0.05 \\
-    2 & 0.6 & 0.15 \\
-    2.5 & 0 & 0.03 \\
-    3 & 0.2 & 0.1 \\
-    4 & 0.15 & 0.06 \\
-    5 & 0.05 & 0.03 \\
-    6 & 0.05 & 0.01 \\
-    7 & 0.03 & 0.01 \\
+    1 & 0 & 0 \\
+    1.5 & -\infty & -1.75 \\
+    2 & -0.5 & -1 \\
+    2.5 & -\infty & -2.5 \\
+    3 & -1.25 & -1.75 \\
+    4 & -1.5 & -2 \\
+    5 & -2 & -2.5 \\
+    6 & -2.25 & -2.6 \\
+    7 & -2.3 & -2.7 \\
   \end{tabular}
   \caption{Harmonic amplitudes}
 \end{table}

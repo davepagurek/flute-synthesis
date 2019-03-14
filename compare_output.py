@@ -16,7 +16,7 @@ sampwidth=2
 
 notes = [
     # ("G4", "notes/g.wav"),
-    ("B5", "notes/vibrato.wav"),
+    ("A#5", "notes/vibrato.wav"),
 ]
 
 def compare_lowpass():
@@ -111,7 +111,7 @@ def compare_note():
     for notename, filename in notes:
         real = read_wav(filename)
         
-        generator = flute(note(notename), len(real)/44100)
+        generator = flute(note(notename), len(real)/44100, 1)
         synth = np.array([ generator(t / 44100) for t in range(len(real)) ])
 
         fig, ax = plt.subplots(1, 2, sharex=True, sharey=True)
