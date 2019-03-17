@@ -160,10 +160,14 @@ def note_envelope(length, velocity, adsr):
     return mult(const(velocity), envelope(a, d, s, r, max(0, length - a - d - r)))
 
 def flute(note, length, velocity):
-    vol = amplitude(-10)
-    magnitude = 0.2 * velocity
+    vol = amplitude(-8)
+
+    # Scale down magnitude from Bb5 to A3
+    vol *= velocity * 10**(-0.8*max(0, min(1, (932 - note)/712)))
+    wind_magnitude = velocity * 10**(-0.2 - 1 + max(0, min(1, abs(440 - note)/550)))
+
+    magnitude = 0.2
     offset = 0.8
-    vibrato = add(const(0.7), mult(sigmoid(-0.4, scale=30),  sine(5, const(0.6))))
 
     def overblown(f):
         # ~D5 to ~D#7
@@ -178,8 +182,11 @@ def flute(note, length, velocity):
 
     is_overblown = overblown(note)
 
-    delay = 0.02 if is_overblown else 0
-    attack_overblow = 1.8
+    delay = 0.005 if is_overblown else 0
+    attack_overblow = 1 + max(0, velocity-0.8)
+
+    vibrato_scale = 0.6 * velocity
+    vibrato = add(const(1 - vibrato_scale/2), mult(sigmoid(-0.4, scale=30),  sine(4.5, const(vibrato_scale))))
 
     peaks = {
         1: (0, 0),
@@ -206,22 +213,26 @@ def flute(note, length, velocity):
         0.07
     ))
     env_even = note_envelope(length - delay, 1, (
-        0.1 if is_overblown else 0.02,
-        0.1,
+        0.04 if is_overblown else 0.02,
+        0.04,
         0.65 / attack_overblow,
         0.07
     ))
     return add(
         mult(
-            lowpass2((1/44100)/((1/44100) + (1/15000)), noise(amplitude(-18))),
-            note_envelope(length, 1 if is_overblown else 0.7, (0.01, 0.1, 0.3, 0.07))
+            lowpass2((1/44100)/((1/44100) + (1/15000)), noise(amplitude(-20))),
+            note_envelope(length, 1 if is_overblown else 0.7, (0.01, 0.1, wind_magnitude, 0.07))
         ),
         add(
-            mult(const(vol), harmonics(note, {
-                1: mult(note_envelope(length, get_vol(1), (0.02, 0.1, 0.5, 0.07)), random_wobble(magnitude, offset)),
-                1.5: mult(note_envelope(length, get_vol(1.5), (0.02, 0.08, 0.14, 0.07)), random_wobble(magnitude, offset)),
-                2.5: mult(note_envelope(length, get_vol(2.5), (0.02, 0.08, 0.14, 0.07)), random_wobble(magnitude, offset))
-            })),
+            add(
+                harmonics(note, {
+                    1: mult(note_envelope(length, get_vol(1) * (vol / attack_overblow), (0.02, 0.1, 0.5 * attack_overblow, 0.07)), random_wobble(magnitude, offset))
+                }),
+                harmonics(note, {
+                    1.5: mult(note_envelope(length, get_vol(1.5) * vol, (0.02, 0.08, 0.14, 0.07)), random_wobble(magnitude, offset)),
+                    2.5: mult(note_envelope(length, get_vol(2.5) * vol, (0.02, 0.08, 0.14, 0.07)), random_wobble(magnitude, offset))
+                })
+            ),
             time_offset(harmonics(note, {
                 2: mult(env_even, scale(get_vol(2) * vol, random_wobble(magnitude, offset))),
                 3: mult(env_odd, mult(scale(get_vol(3) * vol, random_wobble(magnitude, offset)), vibrato)),
@@ -287,6 +298,6 @@ def synth_from_midi(f, channels, synth, extend=0):
     return generator, time+extend
 
 if __name__ == "__main__":
-    generator, length = synth_from_midi("Afar.mid", set([0, 1]), flute, extend=0.02)
+    generator, length = synth_from_midi("Afar.mid", set([0, 1]), flute, extend=0.07)
     gen_wav("Afar.wav", generator, length)
-    # gen_wav("output.wav", flute(note("A4"), 2.5, 1), 2.5)
+    # gen_wav("output.wav", flute(note("A5"), 2.5, 0.8), 2.5)
