@@ -139,43 +139,35 @@ The steeper rolloff rate more closely matches the recorded data, so I decided to
 To actually implement this as a digital filter, the transfer function needs to be turned into a discrete time equation relative to the past discrete samples. The first step is to separate the frequency-domain input $X(s)$ and output $Y(s)$.
 
 $$\begin{aligned}
-H(s) &= \frac{\omega_{BW}}{s^2 + 2\omega_{BW}s + \omega_{BW}^2}\\
-\frac{Y(s)}{X(s)} &= \frac{1}{\frac{s^2}{\omega_{BW}^2} + \frac{2s}{\omega_{BW}} + 1}\\
-X(s) &= Y(s)\left(\frac{s^2}{\omega_{BW}^2} + \frac{2s}{\omega_{BW}} + 1\right)\\
-X(s) &= \frac{s^2}{\omega_{BW}^2}Y(s) + \frac{2s}{\omega_{BW}}Y(s) + Y(s)\\
+H(s) &= \frac{K\omega_{BW}^2}{s^2 + 2\zeta\omega_{BW}s + \omega_{BW}^2}\\
+\frac{Y(s)}{X(s)} &= \frac{1}{\frac{s^2}{K\omega_{BW}^2} + \frac{2\zeta s}{K\omega_{BW}} + \frac{1}{K}}\\
+X(s) &= Y(s)\left(\frac{s^2}{K\omega_{BW}^2} + \frac{2\zeta s}{K\omega_{BW}} + \frac{1}{K}\right)\\
+X(s) &= \frac{s^2}{K\omega_{BW}^2}Y(s) + \frac{2\zeta s}{K\omega_{BW}}Y(s) + \frac{1}{K}Y(s)\\
 \end{aligned}$$
 
 Having separated input from output, the equation can be brought into the time domain using the inverse Laplace transform, assuming $y(0) = \frac{dy(t)}{dt}\Bigr|_{t=0} = \frac{d^2y(t)}{dt^2}\Bigr|_{t=0} = 0$:
 
 $$\begin{aligned}
-\mathcal{L}^{-1}\left\{X(s)\right\} &= \mathcal{L}^{-1}\left\{\frac{s^2}{\omega_{BW}^2}Y(s) + \frac{2s}{\omega_{BW}}Y(s) + Y(s)\right\}\\
-x(t) &= \frac{1}{\omega_{BW}^2}\left(\frac{d^2 y(t)}{dt^2}\right) + \frac{2}{\omega_{BW}}\left(\frac{d y(t)}{dt}\right) + y(t)\\
+\mathcal{L}^{-1}\left\{X(s)\right\} &= \mathcal{L}^{-1}\left\{\frac{s^2}{K\omega_{BW}^2}Y(s) + \frac{2\zeta s}{K\omega_{BW}}Y(s) + \frac{1}{K}Y(s)\right\}\\
+x(t) &= \frac{1}{K\omega_{BW}^2}\left(\frac{d^2 y(t)}{dt^2}\right) + \frac{2\zeta}{K\omega_{BW}}\left(\frac{d y(t)}{dt}\right) + \frac{1}{K}y(t)\\
 \end{aligned}$$
 
 Finally, the first and second derivatives can be approximated using the discrete time samples $y(t)$, $y(t - \Delta t)$, and $y(t - 2\Delta t)$, rearranging for the next output, $y(t)$:
 
 $$\begin{aligned}
-x(t) &= \frac{1}{\omega_{BW}^2}\left(\frac{y(t) - 2y(t - \Delta t) + y(t - 2\Delta t)}{\Delta t^2}\right) + \frac{2}{\omega_{BW}}\left(\frac{y(t) - y(t - \Delta t)}{\Delta t}\right) + y(t)\\
+x(t) &= \frac{1}{K\omega_{BW}^2}\left(\frac{y(t) - 2y(t - \Delta t) + y(t - 2\Delta t)}{\Delta t^2}\right) + \frac{2\zeta}{K\omega_{BW}}\left(\frac{y(t) - y(t - \Delta t)}{\Delta t}\right) + \frac{1}{K}y(t)\\
 %
 y(t) &= \frac{x(t)
-  - \left(\frac{-2}{\omega_{BW}\Delta t} - \frac{2}{\omega_{BW}^2\Delta t^2}\right) y(t - \Delta t)
-  - \left(\frac{1}{\omega_{BW}^2\Delta t^2}\right) y(t - 2\Delta t)
-}{1 + \frac{2}{\omega_{BW}\Delta t} + \frac{1}{\omega_{BW}^2\Delta t^2}}\\
+  - \left(\frac{-2\zeta}{K\omega_{BW}\Delta t} - \frac{2}{K\omega_{BW}^2\Delta t^2}\right) y(t - \Delta t)
+  - \left(\frac{1}{K\omega_{BW}^2\Delta t^2}\right) y(t - 2\Delta t)
+}{\frac{1}{K} + \frac{2\zeta}{K\omega_{BW}\Delta t} + \frac{1}{K\omega_{BW}^2\Delta t^2}}\\
 %
-y(t) &= \left(\frac{\omega_{BW}^2\Delta t^2}{\omega_{BW}^2\Delta t^2 + 2\omega_{BW}\Delta t + 1}\right) x(t)\\
-  & - \left(\frac{-2\omega_{BW}\Delta t - 2}{\omega_{BW}^2\Delta t^2 + 2\omega_{BW}\Delta t + 1}\right) y(t - \Delta t)\\
-  & - \left(\frac{1}{\omega_{BW}^2\Delta t^2 + 2\omega_{BW}\Delta t + 1}\right) y(t - 2\Delta t)\\
+y(t) &= \left(\frac{K\omega_{BW}^2\Delta t^2}{\omega_{BW}^2\Delta t^2 + 2\zeta\omega_{BW}\Delta t + 1}\right) x(t)\\
+  & - \left(\frac{-2\zeta\omega_{BW}\Delta t - 2}{\omega_{BW}^2\Delta t^2 + 2\zeta\omega_{BW}\Delta t + 1}\right) y(t - \Delta t)\\
+  & - \left(\frac{1}{\omega_{BW}^2\Delta t^2 + 2\zeta\omega_{BW}\Delta t + 1}\right) y(t - 2\Delta t)\\
 \end{aligned}$$
 
-Let $\alpha = \frac{\omega_{BW} \Delta t}{\omega_{BW} \Delta t + 1}$. Then, each new value outputted by the filter is effectively a weighted average of the new input and the past two output values:
-
-$$\begin{aligned}
-y(t) &= \alpha^2 x(t)\\
-  &\quad - 2(\alpha - 1) y(t - \Delta t)\\
-  &\quad - (1 - \alpha)^2 y(t - 2\Delta t)\\
-\end{aligned}$$
-
-The concrete value of $\alpha$ is found by using $\Delta t = 44100\text{Hz}$, the sampling frequency, and $\omega_{BW} = 15000\text{Hz}$, the approximate frequency around which we want to start seeing rolloff. Figure 11 shows what white noise looks like, subjected to a first-order lowpass filter and this second-order filter.
+Each new value outputted by the filter is effectively a weighted average of the new input and the past two output values. The concrete values of the weights are found by using $\Delta t = 44100\text{Hz}$, the sampling frequency, and by setting $\omega_{BW}$ to the note being sounded. Figure 11 shows what white noise looks like, subjected to a first-order lowpass filter and this second-order filter.
 
 ![White noise, shown raw, and subjected to first- and second-order filters.](img/filters.png)
 

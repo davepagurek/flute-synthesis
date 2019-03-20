@@ -7,7 +7,7 @@ import math
 import struct
 import matplotlib.pyplot as plt
 
-from gen_synth import flute, note, noise, lowpass, lowpass2, amplitude, note_envelope, add, mult, random_wobble, sine, sigmoid, const
+from gen_synth import flute, note, noise, lowpass, lowpass2, lowpass_resonant, amplitude, note_envelope, add, mult, random_wobble, sine, sigmoid, const
 
 comptype="NONE"
 compname="not compressed"
@@ -22,31 +22,39 @@ notes = [
 def compare_lowpass():
     raw = noise(amplitude(-25))
     a = (1/44100)/((1/44100) + (1/15000))
+    omega = 440 * 2 * 2 * math.pi
+    zeta = 0.1
+    k = 1
     filtered = lowpass(a, noise(amplitude(-35)))
     double_filtered = lowpass2(a, noise(amplitude(-35)))
+    double_filtered2 = lowpass_resonant(k, omega, zeta, noise(amplitude(-35)))
 
-    fig, ax = plt.subplots(1, 3, sharex=True, sharey=True)
-    filters = [("Raw", raw), ("1st-order Filtered", filtered), ("2nd-order Filtered", double_filtered)]
+    fig, ax = plt.subplots(1, 4, sharex=True, sharey=True)
+    filters = [("Raw", raw), ("1st-order Filtered", filtered), ("2nd-order Filtered", double_filtered), ("2nd-order resonant", double_filtered2)]
     for i, (title, generator) in enumerate(filters):
         sound = np.array([ generator(t / 44100) for t in range(44100) ])
         freqs, times, Sx = signal.spectrogram(sound, fs=44100,
                 nperseg=1024, noverlap=24,
                 detrend=False, scaling='spectrum')
 
-        ax[i].pcolormesh(times, freqs / 1000, 10 * np.log10(Sx), cmap='plasma',
+        ax[i].pcolormesh(times, freqs / (2*math.pi), 10 * np.log10(Sx), cmap='plasma',
                 vmin=-100,
                 vmax=-16)
         if i == 0:
-            ax[i].set_ylabel('Frequency (kHz)')
+            ax[i].set_ylabel('Frequency (Hz)')
         ax[i].set_xlabel('Time (s)')
         ax[i].set_title(title)
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
 def compare_bode():
     alpha = 1/1000
+    omega = 440 * 2 * math.pi
+    zeta = 0.1
+    k = 1
 
-    single = signal.lti([1], [alpha, 1])
-    double = signal.lti([1], [alpha*alpha, 2*alpha, 1])
+    single = signal.lti([k], [1/omega, 1])
+    # double = signal.lti([1], [alpha*alpha, 2*alpha, 1])
+    double = signal.lti([k*omega*omega], [1, 2*omega*zeta, omega*omega])
 
     fig, ax = plt.subplots(2, 1, sharex=True, sharey=True)
     for i, (title, system) in enumerate([('First Order', single), ('Second Order', double)]):
@@ -54,7 +62,7 @@ def compare_bode():
         ax[i].set_title(title)
         ax[i].set_xlabel('Frequency (Hz)')
         ax[i].set_ylabel('Gain (dB)')
-        ax[i].semilogx(w, mag)
+        ax[i].semilogx(w/(2*math.pi), mag)
         ax[i].grid()
         ax[i].margins(x=0, y=0)
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
@@ -121,11 +129,11 @@ def compare_note():
                     detrend=False, scaling='spectrum')
 
             # Colormap names: https://matplotlib.org/examples/color/colormaps_reference.html
-            ax[i].pcolormesh(times, freqs / 1000, 10 * np.log10(Sx), cmap='plasma',
+            ax[i].pcolormesh(times, freqs / (2*math.pi), 10 * np.log10(Sx), cmap='plasma',
                     vmin=-100,
                     vmax=-16)
             if i == 0:
-                ax[i].set_ylabel('Frequency (kHz)')
+                ax[i].set_ylabel('Frequency (Hz)')
             ax[i].set_xlabel('Time (s)')
             ax[i].set_title(title)
 

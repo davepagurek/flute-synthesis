@@ -27,6 +27,8 @@ def gen_wav(
     output_file.setnframes(total_frames)
 
     for frame in range(total_frames):
+        if frame % fs == 0:
+            print(f"{100 * frame / (total_frames - 1):.2f}% done")
         sample = generator(frame / fs)
         output_file.writeframes(struct.pack('h', int(np.clip(sample, -1, 1) * 32767)))
 
@@ -119,6 +121,31 @@ def lowpass2(a, fn):
 
     return lowpass_impl
 
+def lowpass_resonant(k, omega, zeta, fn):
+    last = [0, 0]
+    dt = 1/44100
+    denom = omega*omega*dt*dt + 2*zeta*omega*dt + 1
+    c_x = k*omega*omega*dt*dt / denom
+    c_y1 = (-2*zeta*omega*dt - 2) / denom
+    c_y2 = 1 / denom
+    
+    def lowpass_impl(t):
+        nonlocal c_x
+        nonlocal c_y1
+        nonlocal c_y2
+        nonlocal last
+
+        next_val = c_x * fn(t)
+        next_val -= c_y1 * last[-1]
+        next_val -= c_y2 * last[-2]
+
+        last.append(next_val)
+        last.pop(0)
+
+        return next_val
+
+    return lowpass_impl
+
 def time_offset(fn, delay):
     return lambda t: fn(t - delay)
 
@@ -161,10 +188,14 @@ def note_envelope(length, velocity, adsr):
 
 def flute(note, length, velocity):
     vol = amplitude(-8)
+    note *= (1 + note/440000)
+    # length_scale = 10**(max(0, min(1.3, 1/(length/0.5) - 1)))
 
     # Scale down magnitude from Bb5 to A3
     vol *= velocity * 10**(-0.8*max(0, min(1, (932 - note)/712)))
-    wind_magnitude = velocity * 10**(-0.2 - 1 + max(0, min(1, abs(440 - note)/550)))
+    # vol /= length_scale**0.05
+
+    wind_magnitude = velocity * 10**(-1 + max(0, min(1, abs(440 - note)/550)))
 
     magnitude = 0.2
     offset = 0.8
@@ -182,10 +213,10 @@ def flute(note, length, velocity):
 
     is_overblown = overblown(note)
 
-    delay = 0.005 if is_overblown else 0
+    delay = 0.01 if is_overblown else 0.005
     attack_overblow = 1 + max(0, velocity-0.8)
 
-    vibrato_scale = 0.6 * velocity
+    vibrato_scale = 0.5 * velocity
     vibrato = add(const(1 - vibrato_scale/2), mult(sigmoid(-0.4, scale=30),  sine(4.5, const(vibrato_scale))))
 
     peaks = {
@@ -218,10 +249,15 @@ def flute(note, length, velocity):
         0.65 / attack_overblow,
         0.07
     ))
+
+    omega = note * 2 * math.pi
+    zeta = 0.0001
+    k = 1
+
     return add(
         mult(
-            lowpass2((1/44100)/((1/44100) + (1/15000)), noise(amplitude(-20))),
-            note_envelope(length, 1 if is_overblown else 0.7, (0.01, 0.1, wind_magnitude, 0.07))
+            lowpass_resonant(k, omega, zeta, noise(amplitude(-34))),
+            note_envelope(length, 1 if is_overblown else 0.7, (0.009, 0.1, wind_magnitude, 0.07))
         ),
         add(
             add(
@@ -237,9 +273,14 @@ def flute(note, length, velocity):
                 2: mult(env_even, scale(get_vol(2) * vol, random_wobble(magnitude, offset))),
                 3: mult(env_odd, mult(scale(get_vol(3) * vol, random_wobble(magnitude, offset)), vibrato)),
                 4: mult(env_even, mult(scale(get_vol(4) * vol, random_wobble(magnitude, offset)), vibrato)),
-                5: mult(env_odd, mult(scale(get_vol(5) * vol, random_wobble(magnitude, offset)), vibrato)),
-                6: mult(env_even, mult(scale(get_vol(6) * vol, random_wobble(magnitude, offset)), vibrato)),
-                7: mult(env_odd, mult(scale(get_vol(7) * vol, random_wobble(magnitude, offset)), vibrato)),
+                5: mult(env_odd, scale(get_vol(5) * vol, random_wobble(magnitude, offset))),
+                6: mult(env_even, scale(get_vol(6) * vol, random_wobble(magnitude, offset))),
+                7: mult(env_odd, scale(get_vol(7) * vol, random_wobble(magnitude, offset))),
+                8: mult(env_odd, scale(10**-3 * vol, random_wobble(magnitude, offset))),
+                9: mult(env_odd, scale(10**-4 * vol, random_wobble(magnitude, offset))),
+                10: mult(env_odd, scale(10**-5 * vol, random_wobble(magnitude, offset))),
+                11: mult(env_odd, scale(10**-6 * vol, random_wobble(magnitude, offset))),
+                12: mult(env_odd, scale(10**-7 * vol, random_wobble(magnitude, offset))),
             }), delay)
         )
     )
@@ -298,6 +339,6 @@ def synth_from_midi(f, channels, synth, extend=0):
     return generator, time+extend
 
 if __name__ == "__main__":
-    generator, length = synth_from_midi("Afar.mid", set([0, 1]), flute, extend=0.07)
+    generator, length = synth_from_midi("Afar.mid", set([0, 1]), flute, extend=0.04)
     gen_wav("Afar.wav", generator, length)
     # gen_wav("output.wav", flute(note("A5"), 2.5, 0.8), 2.5)
