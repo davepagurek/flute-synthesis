@@ -187,7 +187,7 @@ def note_envelope(length, velocity, adsr):
     return mult(const(velocity), envelope(a, d, s, r, max(0, length - a - d - r)))
 
 def flute(note, length, velocity):
-    vol = amplitude(-8)
+    vol = amplitude(-6)
     note *= (1 + note/440000)
     # length_scale = 10**(max(0, min(1.3, 1/(length/0.5) - 1)))
 
@@ -216,8 +216,8 @@ def flute(note, length, velocity):
     delay = 0.01 if is_overblown else 0.005
     attack_overblow = 1 + max(0, velocity-0.8)
 
-    vibrato_scale = 0.5 * velocity
-    vibrato = add(const(1 - vibrato_scale/2), mult(sigmoid(-0.4, scale=30),  sine(4.5, const(vibrato_scale))))
+    vibrato_scale = 0.6 * velocity
+    vibrato = add(const(1 - vibrato_scale/2), mult(sigmoid(-0.6, scale=30),  sine(4.5, const(vibrato_scale))))
 
     peaks = {
         1: (0, 0),
@@ -273,14 +273,18 @@ def flute(note, length, velocity):
                 2: mult(env_even, scale(get_vol(2) * vol, random_wobble(magnitude, offset))),
                 3: mult(env_odd, mult(scale(get_vol(3) * vol, random_wobble(magnitude, offset)), vibrato)),
                 4: mult(env_even, mult(scale(get_vol(4) * vol, random_wobble(magnitude, offset)), vibrato)),
-                5: mult(env_odd, scale(get_vol(5) * vol, random_wobble(magnitude, offset))),
-                6: mult(env_even, scale(get_vol(6) * vol, random_wobble(magnitude, offset))),
-                7: mult(env_odd, scale(get_vol(7) * vol, random_wobble(magnitude, offset))),
-                8: mult(env_odd, scale(10**-3 * vol, random_wobble(magnitude, offset))),
-                9: mult(env_odd, scale(10**-4 * vol, random_wobble(magnitude, offset))),
-                10: mult(env_odd, scale(10**-5 * vol, random_wobble(magnitude, offset))),
-                11: mult(env_odd, scale(10**-6 * vol, random_wobble(magnitude, offset))),
-                12: mult(env_odd, scale(10**-7 * vol, random_wobble(magnitude, offset))),
+                5: mult(env_odd, mult(scale(get_vol(5) * vol, random_wobble(magnitude, offset)), vibrato)),
+                6: mult(env_even, mult(scale(get_vol(6) * vol, random_wobble(magnitude, offset)), vibrato)),
+                7: mult(env_odd, mult(scale(get_vol(7) * vol, random_wobble(magnitude, offset)), vibrato)),
+                8: mult(env_odd, mult(scale(10**-2.5 * vol, random_wobble(magnitude, offset)), vibrato)),
+                9: mult(env_odd, mult(scale(10**-2.5 * vol, random_wobble(magnitude, offset)), vibrato)),
+                10: mult(env_odd, mult(scale(10**-2.6 * vol, random_wobble(magnitude, offset)), vibrato)),
+                11: mult(env_odd, mult(scale(10**-2.7 * vol, random_wobble(magnitude, offset)), vibrato)),
+                12: mult(env_odd, mult(scale(10**-2.8 * vol, random_wobble(magnitude, offset)), vibrato)),
+                13: mult(env_odd, mult(scale(10**-3 * vol, random_wobble(magnitude, offset)), vibrato)),
+                14: mult(env_odd, mult(scale(10**-3.2 * vol, random_wobble(magnitude, offset)), vibrato)),
+                15: mult(env_odd, mult(scale(10**-3.4 * vol, random_wobble(magnitude, offset)), vibrato)),
+                16: mult(env_odd, mult(scale(10**-3.6 * vol, random_wobble(magnitude, offset)), vibrato)),
             }), delay)
         )
     )
@@ -341,4 +345,4 @@ def synth_from_midi(f, channels, synth, extend=0):
 if __name__ == "__main__":
     generator, length = synth_from_midi("Afar.mid", set([0, 1]), flute, extend=0.04)
     gen_wav("Afar.wav", generator, length)
-    # gen_wav("output.wav", flute(note("A5"), 2.5, 0.8), 2.5)
+    # gen_wav("output.wav", flute(note("A#5"), 2.5, 1), 2.5)

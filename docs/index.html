@@ -1,0 +1,152 @@
+<html>
+  <head>
+    <title>
+      Flute Synthesis
+    </title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link href="https://fonts.googleapis.com/css?family=EB+Garamond:400,400i,700" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="style.css" />
+  </head>
+  <body>
+    <div id="slides" class="loading">
+      <section class="center">
+        <h1>Flute Synthesis</h1>
+        <h4>by Dave Pagurek</h4>
+      </section>
+
+      <section class="aligntop">
+        <h2>Theory</h2>
+        <p>The flute can be modelled as an open air column, where harmonics come in integer multiples.</p>
+        <div class="fill center">
+          <img src="img/openair.png" width="60%" />
+        </div>
+      </section>
+
+      <section class="aligntop">
+        <h2>Measurements</h2>
+        <div class="fill center">
+          <img src="img/defg.png" />
+        </div>
+      </section>
+
+      <section class="aligntop">
+        <h2>Measurements</h2>
+        <div class="column center fill">
+          <div class="fill center">
+            <img src="img/harmonics.png" />
+          </div>
+          <p data-order="1">Things come in multiples of 0.5... 🤔</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Overblown notes</h2>
+        <p>Some notes have a length corresponding to an octave below, but increased air speed causes the fundamental not to sound.</p>
+        <div class="fill center" data-order="1">
+          <img src="img/overblown.png" width="70%" />
+        </div>
+      </section>
+
+      <section>
+        <h2>Overblown notes</h2>
+        <div class="fill center">
+          <img src="img/overblown-segmented.png" />
+        </div>
+      </section>
+
+      <section>
+        <h2>Harmonic amplitudes</h2>
+        <div class="fill center">
+          <table>
+            <tr><th>Harmonic</th><th>Normal gain</th><th>Overblown gain</th></tr>
+            <tr><td>1</td><td>0</td><td>0</td></tr>
+            <tr><td>1.5</td><td>-&infin;</td><td>-1.75</td></tr>
+            <tr><td>2</td><td>-0.5</td><td>-1</td></tr>
+            <tr><td>2.5</td><td>-&infin;</td><td>-2.5</td></tr>
+            <tr><td>3</td><td>-1.25</td><td>-1.75</td></tr>
+            <tr><td>4</td><td>-1.5</td><td>-2</td></tr>
+            <tr><td>5</td><td>-2</td><td>-2.5</td></tr>
+            <tr><td>6</td><td>-2.25</td><td>-2.6</td></tr>
+            <tr><td>7</td><td>-2.3</td><td>-2.7</td></tr>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2>Envelopes</h2>
+        <div class="row fill">
+          <div class="column fill">
+            <img src="img/envelope.png" width="80%" />
+            <img src="img/vibrato.png" width="80%" />
+          </div>
+          <div class="column fill">
+            <img src="img/fluctuation.png" />
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Noise</h2>
+        <div class="fill row">
+          <div class="column fill">
+            <p class="center">
+              H(s) =
+              <span class="frac">
+                <span>K &omega;<sub><em>c</em></sub><sup>2</sup></span>
+              <span>s<sup>2</sup> + 2 &zeta; &omega;<sub><em>c</em></sub> + &omega;<sub><em>c</em></sub><sup>2</sup></span>
+              </span>
+            </p>
+          </div>
+          <div class="column fill">
+            <img src="img/bode.png" />
+          </div>
+        </div>
+      </section>
+
+      <section class="align-top">
+        <h2>Variation</h2>
+        <ul>
+          <li>Amplitude scales down as velocity scales down</li>
+          <li>Noise scales up for lower and higher notes, centered around A 440Hz</li>
+          <li>Higher notes tuned slightly sharp</li>
+          <li>For notes not yet overblown, higher velocity increases attack overblow</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Results</h2>
+        <p>Single note</p>
+        <div class="row">
+          <div class="column fill center">
+            <audio controls src="audio/vibrato-flute.mp3" />
+          </div>
+          <div class="column fill center">
+            <audio controls src="audio/vibrato-synth.mp3" />
+          </div>
+        </div>
+        <div class="row fill-double center">
+          <img src="img/synth_with_vibrato.png" width="65%" />
+        </div>
+      </section>
+
+      <section>
+        <h2>Results</h2>
+        <p>Excerpt from a flute duet</p>
+        <div class="row fill">
+          <div class="column fill center">
+            <p>Real</p>
+            <audio controls src="audio/afar-flute-end.mp3" />
+          </div>
+          <div class="column fill center">
+            <p>Synthesized</p>
+            <audio controls src="audio/afar-synth-end.mp3" />
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <script type="text/javascript" src="slides.js"></script>
+    <script type="text/javascript" src="slides/slide.js"></script>
+  </body>
+</html>

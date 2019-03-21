@@ -1,0 +1,273 @@
+body, html {
+  margin: 0;
+  font-size: 1em;
+  font-family: 'EB Garamond', serif;
+  color: #111;
+  width: 100%;
+  height: 100%;
+}
+
+p, li {
+  font-size: 2rem;
+}
+
+@media all and (max-width: 1400px) {
+  body, html {
+    font-size: 0.95em;
+  }
+}
+
+@media all and (max-width: 1200px) {
+  body, html {
+    font-size: 0.8em;
+  }
+}
+
+* {
+  transition: all ease 0.3s;
+}
+
+.hidden {
+  opacity: 0;
+}
+
+h1 {
+  font-size: 3em;
+  text-align: center;
+}
+
+#slides {
+  display: flex;
+  justify-content: stretch;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  font-size: 1.5em;
+}
+
+section {
+  box-sizing: border-box;
+  padding: 2em 5em;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+img, svg.expand {
+  height: auto;
+  max-width: 100%;
+  border: 0;
+}
+
+.loading section {
+  display: none;
+}
+
+.fill {
+  flex: 1;
+}
+
+.fill-double {
+  flex: 2;
+}
+
+.both {
+  align-self: stretch;
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+}
+
+.aligntop {
+  align-items: flex-start !important;
+}
+
+section svg {
+  border: 2px solid #000;
+  justify-self: stretch;
+}
+
+section svg * {
+  transition: all ease 0.3s;
+}
+
+section svg .visible {
+  stroke-dashoffset: 0 !important;
+}
+
+section .stepsContainer {
+  border-left: 1px solid #DDD;
+  padding-left: 1em;
+}
+
+section .stepsContainer .step {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 0.3em;
+  margin-bottom: 0.3em;
+  margin-top: 0.3em;
+  font-size: 0.9em;
+  transition: all ease 0.3s;
+}
+
+.disappearing {
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+ul.disappearing.hidden, ol.disappearing.hidden, p.disappearing.hidden {
+  max-height: 90vh !important;
+}
+ul.disappearing.hidden, ol.disappearing.hidden, p.disappearing.hidden {
+  margin: 0;
+  max-height: 0 !important;
+}
+.step.disappearing.hidden, span.disappearing.hidden {
+  max-width: 0 !important;
+  margin-left: 0;
+}
+.step.disappearing.hidden {
+  margin-right: 0;
+}
+span.disappearing.hidden {
+  margin-right: -0.6em;
+}
+span.disappearing.nospace.hidden {
+  margin-right: 0;
+}
+th.disappearing.hidden, td.disappearing.hidden {
+  max-width: 0 !important;
+  max-height: 0 !important;
+  padding: 0 !important;
+  border-width: 0 !important;
+  border-width: 0 !important;
+}
+
+section .stepsContainer .step span.code, span.disappearing {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+section .stepsContainer .step.visible span.code {
+  background-color: rgba(240,200, 0, 0.6);
+  animation-name: bounce;
+  animation-duration: 0.5s;
+  animation-fill-mode: both;
+}
+
+section .stepsContainer .step.visible.no-animation span.code {
+  animation: none;
+}
+
+td, th {
+  padding: 0.6em;
+  margin: 0;
+  vertical-align: top;
+  border-right: 1px solid #DDD;
+  border-bottom: 1px solid #DDD;
+}
+.row table {
+  max-width: 45%;
+}
+table span.code {
+  display: inline-block;
+  margin-top: 0.1em;
+  margin-bottom: 0.1em;
+}
+table:not(.appearing) td, table:not(.appearing) th, td.first, th.first {
+  border-left: 1px solid #DDD;
+}
+table:not(.appearing) td, table:not(.appearing) th, tr:first-child td, tr:first-child th {
+  border-top: 1px solid #DDD;
+}
+td.hidden, th.hidden {
+  border-color: rgba(0,0,0,0);
+}
+th {
+  font-weight: bold;
+  background-color: #f7f7f7;
+}
+.highlighted th, th.highlighted {
+  background-color: #fff5af;
+}
+.highlighted td, td.highlighted {
+  background-color: #fffce0;
+}
+table {
+  border-spacing: 0;
+  margin: 0 auto;
+  font-size: inherit;
+}
+table:not(.appearing) {
+  border-collapse: collapse;
+}
+
+table.small {
+  font-size: 0.8em;
+}
+
+span.code {
+  font-family: monospace;
+  unicode-bidi: embed;
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 4px;
+  -webkit-border-radius: 4px;
+  padding: 0.2em;
+  vertical-align: middle;
+  word-wrap: normal;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+span.code.highlighted {
+  background-color: rgba(240,200, 0, 0.6);
+}
+
+.disappearing span.code, span.disappearing {
+  white-space: nowrap;
+}
+
+li {
+  margin-top: 0.3em;
+  margin-bottom: 0.3em;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+
+  30% {
+    transform: scale(1.4);
+  }
+}
+
+.frac {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0.4em;
+}
+.frac span {
+  display: block;
+  text-align: center;
+}
+.frac span:first-child {
+  border-bottom: 2px solid #000;
+}

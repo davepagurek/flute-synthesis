@@ -53,11 +53,11 @@ def compare_bode():
     k = 1
 
     single = signal.lti([k], [1/omega, 1])
-    # double = signal.lti([1], [alpha*alpha, 2*alpha, 1])
-    double = signal.lti([k*omega*omega], [1, 2*omega*zeta, omega*omega])
+    double = signal.lti([k*omega*omega], [1, 2*omega, omega*omega])
+    double2 = signal.lti([k*omega*omega], [1, 2*omega*zeta, omega*omega])
 
-    fig, ax = plt.subplots(2, 1, sharex=True, sharey=True)
-    for i, (title, system) in enumerate([('First Order', single), ('Second Order', double)]):
+    fig, ax = plt.subplots(3, 1, sharex=True, sharey=True)
+    for i, (title, system) in enumerate([('First Order', single), ('Second Order', double), ('Second Order Resonant', double2)]):
         w, mag, _ = signal.bode(system)
         ax[i].set_title(title)
         ax[i].set_xlabel('Frequency (Hz)')
@@ -96,7 +96,7 @@ def compare_envelope():
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
 def compare_modulation():
-    vibrato = add(const(0.7), mult(sigmoid(-0.4, scale=30),  sine(5, const(0.6))))
+    vibrato = add(const(0.7), mult(sigmoid(-0.6, scale=30),  sine(5, const(0.6))))
     fluctuation = random_wobble(0.2, 0.8)
 
     vibrato_synth = np.array([ vibrato(t / 44100) for t in range(44100 * 4) ])
@@ -142,8 +142,8 @@ def compare_note():
 # compare_envelope()
 # plt.show()
 
-# compare_modulation()
-# plt.show()
+compare_modulation()
+plt.show()
 
 # compare_bode()
 # plt.show()
