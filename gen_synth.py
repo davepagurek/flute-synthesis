@@ -343,6 +343,6 @@ def synth_from_midi(f, channels, synth, extend=0):
     return generator, time+extend
 
 if __name__ == "__main__":
-    generator, length = synth_from_midi("Afar.mid", set([0, 1]), flute, extend=0.04)
-    gen_wav("Afar.wav", generator, length)
-    # gen_wav("output.wav", flute(note("A#5"), 2.5, 1), 2.5)
+    generator, length = synth_from_midi("tests/Afar.mid", set([0, 1]), flute, extend=0.04)
+    gen_wav("tests/Afar.wav", generator, length)
+    # gen_wav("tests/output.wav", flute(note("A#5"), 2.5, 1), 2.5)
