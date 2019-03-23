@@ -62,7 +62,7 @@ The next piece of information required is the amplitude of each harmonic. This i
 
 In 2018, I recorded a song [@Pagurek] that featured recordings of myself playing the flute. As a starting point, I extracted four samples from one flute track in the song where a single note is held for around a second. There are samples for the notes G, F, E$\flat$, and D. Each file is a mono wav file at a 44100 Hz, cut down to just be the steady-state portion of the held note. I processed each sample to get a sense of the harmonics present in the sound of the flute.I processed each sample to get a sense of the harmonics present in the sound of the flute.
 
-To do this, I ran each sample through a Fast Fourier Transform (FFT). This converts each sample into the frequency domain, showing, for each frequency contributing to the overall sound, the amplitude of its contribution. The frequency domain is slightly noisy due in part to the background noise in the recording and the imperfections in my own playing, so frequency peaks tend to be spread out over a few frequency bands. I ran the FFT results through a peak finding algorithm to automatically identify, approximately, the peaks in the spectrum. The results are shown in Figure 2.
+To do this, I ran each sample through a Fast Fourier Transform (FFT). The FFT values are normalized by multiplying the complex magnitude by $\frac{2}{N}$ for $N$ data points and then converted into decibels. This converts each sample into the frequency domain, showing, for each frequency contributing to the overall sound, the amplitude of its contribution. The frequency domain is slightly noisy due in part to the background noise in the recording and the imperfections in my own playing, so frequency peaks tend to be spread out over a few frequency bands. I ran the FFT results through a peak finding algorithm to automatically identify, approximately, the peaks in the spectrum. The results are shown in Figure 2.
 
 ![Frequency analysis of four notes. The frequency curves were run through a peak finding algorithm, and the identified peaks have been marked with an X.](img/defg.png)
 
@@ -72,7 +72,7 @@ For each peak found, I graphed its amplitude relative to the ratio of its freque
 
 All of these frequencies are integer multiples of the fundamental. If the harmonics look like they are all multiples of 0.5, like what we saw in the harmonics from the recordings, the actual fundamental frequency is half of the frequency of the note I was playing. Notes like this are played by overblowing to change the air pressure in the instrument, preventing the first harmonic from sounding.
 
-To figure out which notes this applies to, I played an ascending scale and measured the ratios of the harmonics that sounded to the highest amplitude frequency. The results are shown in  Figure 4. Notes for which harmonics come in multiples of 0.5 instead of 1 indicate overblown notes.
+To figure out which notes this applies to, I played an ascending scale and measured the ratios of the harmonics that sounded to the amplitude of the frequency I was attempting to play. The results are shown in  Figure 4. Notes for which harmonics come in multiples of 0.5 instead of 1 indicate overblown notes.
 
 ![A chart showing a dot for each harmonic picked up by the peak finder on the FFT output, with dot size corresponding to relative amplitude. The overblown notes have been highlighted orange.](img/overblown.png)
 
@@ -88,9 +88,9 @@ The large spread of low amplitude values is largely due to noise surrounding the
     {\bf Harmonic} & {\bf Normal gain} & {\bf Overblown gain} \\
     \hline
     1 & 0 & 0 \\
-    1.5 & -\infty & -1.75 \\
+    1.5 & -$\infty$ & -1.75 \\
     2 & -0.5 & -1 \\
-    2.5 & -\infty & -2.5 \\
+    2.5 & -$\infty$ & -2.5 \\
     3 & -1.25 & -1.75 \\
     4 & -1.5 & -2 \\
     5 & -2 & -2.5 \\
@@ -124,17 +124,15 @@ I model the brightness modulation with a 5Hz sine wave that gets multiplied with
 
 ## Noise component
 
-A spectrum analysis of recorded notes shows that there is a noise component to the sound. While this low-energy noise comes from the air flow leaving the mouth, and not the resonance of the instrument itself, it's a distinctive part of the sound of the flute, so it is a sound I want to replicate in the synthesizer.
+A spectrum analysis of recorded notes shows that there is a noise component to the sound. Most of this low-energy noise comes from the air flow leaving the mouth, with some frequencies resonating in the tube of the instrument.
 
-Looking at the spectrum produced by the recorded noise component in Figure 12, the noise appears to be larger in magnitude in the lower frequencies. This tells us that it is not *white noise*, which is defined to be noise where frequency contributions are the same within the region of interest. One way to generate the sort of noise seen in the recording is to use subtractive synthesis, where one starts with white noise, but then quiets down the higher frequencies by applying a filter.
+I chose to model this as white noise that gets filtered with resonance. White noise is defined by having equal contributions from each frequency, but there are multiple functions that generate discrete time-domain samples that create white noise. One could implement *Gaussian white noise*, where samples have a normal distribution with zero mean. However, Gaussian distributions have an unbounded range, and we need amplitudes to stay between -1 and 1. Instead, I used a uniform distribution to generate time-domain samples.
 
-White noise is defined by having equal contributions from each frequency, but there are multiple functions that generate discrete time-domain samples that create white noise. One could implement *Gaussian white noise*, where samples have a normal distribution with zero mean. However, Gaussian distributions have an unbounded range, and we need amplitudes to stay between -1 and 1. Instead, I used a uniform distribution to generate time-domain samples.
-
-The noise then needs to be filtered down using some kind of lowpass filter, leaving low frequencies the same, but reducing the importance of higher frequencies. A simple first-order system could work, but for frequencies above the bandwidth frequency $\omega_{BW}$, high frequencies roll off at -20dB per decade. In order to have high frequencies roll off faster, higher order systems are required. A second-order system rolls off at -40dB per decade, as shown in Figure 10.
+The noise then needs to be filtered down. A simple first-order system could be used to create a lowpass filter, but the rolloff rate after the filter cutoff is fixed at -20dB per decade, and it would not model resonance. A second-order filter, on the other hand, allows for a steeper -40dB per decade rolloff and resonance. For that reason, I use a second-order system.
 
 ![Bode plots showing the frequency response of first and second order low pass filters. The second order filter has a steeper rolloff.](img/bode.png){width=70%}
 
-The steeper rolloff rate more closely matches the recorded data, so I decided to implement a second order low pass filter. Transfer functions for second order systems typically have the form $H(s) = \frac{K\omega_n^2}{s^2 + 2\zeta\omega_n s + \omega_n^2}$. $\omega_n \approx \omega_{BW}$, which is the cutoff frequency after which we see rolloff. No extra gain is needed, so I set the gain to $K = 1$. $\zeta$ dictates the oscillatory behaviour of the system: if it is greater than 1, the system is overdamped, and the filter can overshoot and oscillate when reaching to "catch up" with an input signal. This is undesirable. When $\zeta \le 1$, the system will not oscillate, so I picked $\zeta = 1$ to make the system critically damped, meaning that it will reach its equilibrium point as fast as it can without oscillating.
+Transfer functions for second order systems typically have the form $H(s) = \frac{K\omega_n^2}{s^2 + 2\zeta\omega_n s + \omega_n^2}$. $\omega_n \approx \omega_{BW}$, which is the cutoff frequency after which we see rolloff. I set this equal to the frequency being sounded by the flute. No extra gain is needed, so I set the gain to $K = 1$. $\zeta$ dictates the oscillatory behaviour of the system: if it is greater than 1, the system is overdamped, and the filter can overshoot and oscillate when reaching to "catch up" with an input signal. This effect causes resonance, so I set $\zeta = 0.01$.
 
 To actually implement this as a digital filter, the transfer function needs to be turned into a discrete time equation relative to the past discrete samples. The first step is to separate the frequency-domain input $X(s)$ and output $Y(s)$.
 
@@ -167,20 +165,26 @@ y(t) &= \left(\frac{K\omega_{BW}^2\Delta t^2}{\omega_{BW}^2\Delta t^2 + 2\zeta\o
   & - \left(\frac{1}{\omega_{BW}^2\Delta t^2 + 2\zeta\omega_{BW}\Delta t + 1}\right) y(t - 2\Delta t)\\
 \end{aligned}$$
 
-Each new value outputted by the filter is effectively a weighted average of the new input and the past two output values. The concrete values of the weights are found by using $\Delta t = 44100\text{Hz}$, the sampling frequency, and by setting $\omega_{BW}$ to the note being sounded. Figure 11 shows what white noise looks like, subjected to a first-order lowpass filter and this second-order filter.
+Each new value outputted by the filter is effectively a weighted average of the new input and the past two output values. The concrete values of the weights are found by using $\Delta t = 44100\text{Hz}$, the sampling frequency, and by setting $\omega_{BW}$, $\zeta$, and $K$ to the aforementioned values. Figure 11 shows what white noise looks like, subjected to a first-order lowpass filter and two second-order filters.
 
-![White noise, shown raw, and subjected to first- and second-order filters.](img/filters.png)
+![White noise, shown raw, and subjected to first- and second-order filters, with and without resonance.](img/filters.png)
 
+# MIDI integration
 
-# Results so far
+I wrote code to import a MIDI file as input, allowing composition to happen in a standard Digital Audio Workstation before rendering a final sound file using the synthesizer. MIDI notes come in the form of note-on and note-off events, indicating where each pitch begins sounding and stops being sounded. The note-on event additionally comes with a *velocity* parameter, indicating the force with which the note should be sounded. This is the main dial a composer can tweak when writing sequenced digital music. I implemented parameter variation based on the pitch and velocity to increase the realism of a full synthesized score:
 
-A short-time Fourier transform graph of a real recording of a $B^\flat_5$ with vibrato is shown next to a graph of the synthesized version of the same thing in Figure 12. It is clear that there are higher harmonics missing in the synthesized version, but where each has increasingly lower frequency and where each becomes more "spread out," fading it into the background noise. Its omission in the synthesized version is noticeable but not too distracting.
+- **Overall amplitude scales down as velocity scales down.** Velocity input, after normalization, comes as a number in $[0, 1]$. The overall magnitude of the synthesizer output is multiplied by the velocity.
+- **Noise amplitude scales based on pitch.** Very low and very high notes require more breath control to play on a flute. Consequently, lower-register notes and higher-register notes tend to end up sounding noisier. To model this, the noise component is given a gain that increases from 0 dB to 1 dB as the pitch moves from an A at 440 Hz up or down an octave.
+- **Higher notes get tuned slightly flat.** High notes require overblowing, which means an increased air speed in the flute column. This is achieved more easily when the head of the instrument is rolled in slightly, so that when air is split on the edge of the mouthpiece, more goes into the column. This also has the effect of lowering the pitch slightly.
+- **Notes get initially overblown at high velocities.** Notes that are not already overblown are given a slight overblow effect at the beginning of a note, where there is an initial higher air speed. This is done by multiplying the peak volume for harmonics above the fundamental by a factor that increases from 1 to 1.2 as velocity increases from 0.8 to 1.
+
+# Results and limitations
+
+A short-time Fourier transform graph of a real recording of a $B^\flat_5$ with vibrato is shown next to a graph of the synthesized version of the same thing in Figure 12. It is clear that there are higher harmonics missing in the synthesized version, but where each has increasingly lower frequency and where each becomes more "spread out," fading it into the background noise. Its omission in the synthesized version is noticeable, as the overall sound appears to be more muffled when compared with its real-life counterpart, but it still sounds convincing on its own.
 
 ![The frequencies over time for a real recording of a $B^\flat_5$ with vibrato compared with a synthesized version.](img/synth_with_vibrato.png)
 
-# Future work
-
-For the final iteration of this project, I will vary the properties of the synthesizer based on the velocity of a note. I have already recorded some sample data to analyze to provide a basis for these changes. I will then write code to synthesize from MIDI input so that I can compose in a Digital Audio Workstation, get output from the synthesizer, and then use that in the music. I will include a sample track that does this in my final report.
+I also took the score for a flute duet [@Pagurek2] I wrote last summer, generated a MIDI file, and produced a synthesized version. Audio files for the original and the synthesized version can listened to and compared. In general, the variations produced using pitch and velocity changes are effective at making the synthesized version sound dynamic and capable of an emotional delivery. However, due to the aforementioned differences in the upper harmonics, the synthesized version sounds noticeably less crisp. Additionally, the quick low notes in real recordings sound much richer and have much more variation than in the synthesized version. The increased noise component in the lower register helps, but a future iteration of this project would likely give more weight to harmonics for lower-register notes due to how much easier it is to overblow those notes.
 
 \newpage
 
